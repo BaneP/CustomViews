@@ -2,13 +2,8 @@ package com.example.epg_grid;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-
-import com.iwedia.dtv.epg.EpgEvent;
-import com.iwedia.dtv.service.ServiceDescriptor;
 
 public class EpgAdapter extends BaseEpgGridAdapter {
-
     @Override
     public int getChannelsCount() {
         // TODO Auto-generated method stub
@@ -22,13 +17,13 @@ public class EpgAdapter extends BaseEpgGridAdapter {
     }
 
     @Override
-    public ServiceDescriptor getChannel(int channelPosition) {
+    public Object getChannel(int channelPosition) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public EpgEvent getEvent(int channelPosition, int eventPosition) {
+    public Object getEvent(int channelPosition, int eventPosition) {
         // TODO Auto-generated method stub
         return null;
     }

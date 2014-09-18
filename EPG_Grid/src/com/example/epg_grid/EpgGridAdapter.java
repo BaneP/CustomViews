@@ -16,9 +16,9 @@ public interface EpgGridAdapter {
 
     int getEventsCount(int channelPosition);
 
-    ServiceDescriptor getChannel(int channelPosition);
+    Object getChannel(int channelPosition);
 
-    EpgEvent getEvent(int channelPosition, int eventPosition);
+    Object getEvent(int channelPosition, int eventPosition);
 
     long getChannelId(int channelPosition);
 
