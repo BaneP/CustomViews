@@ -158,10 +158,12 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
         }
     }
 
+    @Override
     public OnScrollHappenedListener getOnScrollHappenedListener() {
         return mOnScrollHappenedListener;
     }
 
+    @Override
     public void setOnScrollHappenedListener(
             OnScrollHappenedListener mOnScrollHappenedListener) {
         this.mOnScrollHappenedListener = mOnScrollHappenedListener;

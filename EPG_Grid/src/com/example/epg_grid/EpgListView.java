@@ -38,16 +38,17 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
 
     @Override
     public void setAdapter(ListAdapter adapter) {
-        if (adapter instanceof com.example.epg_grid.ListAdapter) {
-            ((com.example.epg_grid.ListAdapter) adapter)
-                    .setOnScrollHappenedListener(this);
+        if (adapter instanceof VerticalListInterface) {
+            ((VerticalListInterface) adapter).setOnScrollHappenedListener(this);
+        } else {
+            throw new RuntimeException(
+                    "Adapter is not implementing VerticalListInterface!");
         }
         super.setAdapter(adapter);
     }
 
     @Override
-    public void scrollTo(HorizListView v, int offset, int totalOffset,
-            int position) {
+    public void scrollTo(HorizListView v, int offset, int totalOffset) {
         mTotalLeftOffset = totalOffset;
         for (int i = 0; i < getChildCount(); i++) {
             HorizListView hlist = (HorizListView) getChildAt(i).findViewById(
@@ -60,7 +61,11 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.d("onKeyListener", "KEY CODE" + keyCode);
+        Log.d("onKeyListener", "KEY CODE" + keyCode
+                + ", SELECTED ITEM POSITION=" + getSelectedItemPosition());
+        if (getSelectedItemPosition() == INVALID_POSITION) {
+            return super.onKeyDown(keyCode, event);
+        }
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_DOWN: {
                 if (getSelectedItemPosition() < getAdapter().getCount() - 1) {
@@ -69,16 +74,12 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                             .findViewById(R.id.hlist);
                     int oldViewPosition = mFocusedView
                             .getSelectedItemPosition();
-                    Log.d("onItemSelected", "oldViewPosition="
-                            + oldViewPosition);
                     FocusedViewInfo viewInfo = mFocusedView
                             .getViewInfoForElementAt(oldViewPosition);
                     mElementLeftOffset = viewInfo.getLeft();
-                    if (getAdapter() instanceof VerticalListInterface) {
-                        ((VerticalListInterface) getAdapter())
-                                .setCurrentScrollPosition(mTotalLeftOffset,
-                                        mElementLeftOffset, viewInfo.getWidth());
-                    }
+                    ((VerticalListInterface) getAdapter())
+                            .setCurrentScrollPosition(mTotalLeftOffset,
+                                    mElementLeftOffset, viewInfo.getWidth());
                     if (newPosition <= getLastVisiblePosition()) {
                         HorizListView newFocusedView = (HorizListView) getChildAt(
                                 newPosition - getFirstVisiblePosition())
@@ -97,16 +98,12 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                             .findViewById(R.id.hlist);
                     int oldViewPosition = mFocusedView
                             .getSelectedItemPosition();
-                    Log.d("onItemSelected", "oldViewPosition="
-                            + oldViewPosition);
                     FocusedViewInfo viewInfo = mFocusedView
                             .getViewInfoForElementAt(oldViewPosition);
                     mElementLeftOffset = viewInfo.getLeft();
-                    if (getAdapter() instanceof VerticalListInterface) {
-                        ((VerticalListInterface) getAdapter())
-                                .setCurrentScrollPosition(mTotalLeftOffset,
-                                        mElementLeftOffset, viewInfo.getWidth());
-                    }
+                    ((VerticalListInterface) getAdapter())
+                            .setCurrentScrollPosition(mTotalLeftOffset,
+                                    mElementLeftOffset, viewInfo.getWidth());
                     if (newPosition >= getFirstVisiblePosition()) {
                         HorizListView newFocusedView = (HorizListView) getChildAt(
                                 newPosition - getFirstVisiblePosition())
