@@ -112,7 +112,7 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
         public HListAdapter() {
             Random rand = new Random();
             for (int i = 0; i < 20; i++) {
-                mElementWidths.put(i, 100 + rand.nextInt(100));
+                mElementWidths.put(i, 100 + rand.nextInt(300));
             }
         }
 

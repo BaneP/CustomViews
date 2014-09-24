@@ -225,31 +225,78 @@ public class HorizListView extends HListView {
      * 
      * @param totalLeftOffset
      *        Left offset of list
-     * @param offset
+     * @param leftOffset
      *        Left offset of view
      * @param viewWidth
      *        Width of previously selected child
      */
     public void setPositionBasedOnLeftOffsetFromAdapter(
-            final int totalLeftOffset, final int offset, final int viewWidth) {
-        Log.d("setPositionBasedOnLeftOffsetFromAdapter", "OFFSET DESIRED: "
-                + offset + ", totalLeftOffset=" + totalLeftOffset);
+            final int totalLeftOffset, final int leftOffset, final int viewWidth) {
         if (getAdapter() instanceof HorizontalListInterface) {
             SparseIntArray elementWidths = ((HorizontalListInterface) getAdapter())
                     .getElementWidths();
             int desiredIndex = 0;
             int widthSum = 0;
+            int overlapValue = 0;
+            int overlapWidthSum = 0;
             for (int i = 0; i < elementWidths.size(); i++) {
-                if (widthSum + elementWidths.get(i) < totalLeftOffset + offset) {
+                // When Old child is inside new child bounds
+                // | | old child | |
+                // | | new child | |
+                if (widthSum <= leftOffset + totalLeftOffset
+                        && widthSum + elementWidths.get(i) >= totalLeftOffset
+                                + leftOffset + viewWidth) {
+                    overlapWidthSum = 0;
+                    overlapValue = 0;
                     desiredIndex = i;
-                    widthSum += elementWidths.get(i);
-                } else {
                     break;
                 }
+                // When Old child is between two possible new child's bounds
+                // (LEFT CHILD)
+                // | | | old child | |
+                // | new child | new child | |
+                else if (widthSum <= totalLeftOffset + leftOffset
+                        && widthSum + elementWidths.get(i) > totalLeftOffset
+                                + leftOffset) {
+                    overlapWidthSum = widthSum;
+                    overlapValue = elementWidths.get(i)
+                            - (totalLeftOffset + leftOffset - widthSum);
+                    desiredIndex = i;
+                    widthSum += elementWidths.get(i);
+                }
+                // When new child is inside old child
+                else if (widthSum > totalLeftOffset + leftOffset
+                        && widthSum + elementWidths.get(i) < totalLeftOffset
+                                + leftOffset + viewWidth) {
+                    overlapWidthSum = 0;
+                    overlapValue = 0;
+                    desiredIndex = i;
+                    break;
+                }
+                // When Old child is between two possible new child's bounds
+                // (RIGHT CHILD)
+                // | | | old child | |
+                // | new child | new child | |
+                else if (widthSum > totalLeftOffset + leftOffset
+                        && widthSum + elementWidths.get(i) >= totalLeftOffset
+                                + leftOffset + viewWidth) {
+                    int newOverlapValue = totalLeftOffset + leftOffset
+                            + viewWidth - widthSum;
+                    if (newOverlapValue > overlapValue) {
+                        overlapWidthSum = widthSum;
+                        desiredIndex = i;
+                    } else {
+                        desiredIndex = i - 1;
+                    }
+                    break;
+                } else {
+                    desiredIndex = i;
+                    widthSum += elementWidths.get(i);
+                }
             }
-            Log.d("setPositionBasedOnLeftOffsetFromAdapter", "desiredIndex="
-                    + desiredIndex + ", offset=" + (widthSum - totalLeftOffset)
-                    + ", widthSum=" + widthSum);
+            if (overlapWidthSum != 0) {
+                widthSum = overlapWidthSum;
+            }
             shouldIScroll = false;
             setSelectionFromLeft(desiredIndex, widthSum - totalLeftOffset);
             setSelectionInt(desiredIndex);
