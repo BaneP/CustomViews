@@ -61,8 +61,8 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.d("onKeyListener", "KEY CODE" + keyCode
-                + ", SELECTED ITEM POSITION=" + getSelectedItemPosition());
+        // Log.d("onKeyListener", "KEY CODE" + keyCode
+        // + ", SELECTED ITEM POSITION=" + getSelectedItemPosition());
         if (getSelectedItemPosition() == INVALID_POSITION) {
             return super.onKeyDown(keyCode, event);
         }
@@ -72,10 +72,8 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                     int newPosition = getSelectedItemPosition() + 1;
                     mFocusedView = (HorizListView) getSelectedView()
                             .findViewById(R.id.hlist);
-                    int oldViewPosition = mFocusedView
-                            .getSelectedItemPosition();
-                    FocusedViewInfo viewInfo = mFocusedView
-                            .getViewInfoForElementAt(oldViewPosition);
+                    FocusedViewInfo viewInfo = mFocusedView.new FocusedViewInfo(
+                            mFocusedView.getSelectedView());// ViewInfoForElementAt(oldViewPosition);
                     mElementLeftOffset = viewInfo.getLeft();
                     ((VerticalListInterface) getAdapter())
                             .setCurrentScrollPosition(mTotalLeftOffset,
@@ -96,10 +94,8 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                     int newPosition = getSelectedItemPosition() - 1;
                     mFocusedView = (HorizListView) getSelectedView()
                             .findViewById(R.id.hlist);
-                    int oldViewPosition = mFocusedView
-                            .getSelectedItemPosition();
-                    FocusedViewInfo viewInfo = mFocusedView
-                            .getViewInfoForElementAt(oldViewPosition);
+                    FocusedViewInfo viewInfo = mFocusedView.new FocusedViewInfo(
+                            mFocusedView.getSelectedView());
                     mElementLeftOffset = viewInfo.getLeft();
                     ((VerticalListInterface) getAdapter())
                             .setCurrentScrollPosition(mTotalLeftOffset,

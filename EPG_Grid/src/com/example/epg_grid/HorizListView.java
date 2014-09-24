@@ -139,6 +139,8 @@ public class HorizListView extends HListView {
         } else if (desiredPosition < getFirstVisiblePosition()) {
             desiredPosition = getFirstVisiblePosition();
         }
+        Log.d("getViewInfoForElementAt", "position=" + position
+                + ", desiredPosition=" + desiredPosition);
         View c = getChildAt(desiredPosition);
         return new FocusedViewInfo(c);
     }
@@ -153,13 +155,21 @@ public class HorizListView extends HListView {
      */
     public void setPositionBasedOnLeftOffset(final int leftOffset,
             final int viewWidth) {
+        Log.d("setPositionBasedOnLeftOffset", "leftOffset=" + leftOffset
+                + ", viewWidth=" + viewWidth);
         if (getAdapter() instanceof HorizontalListInterface) {
             int desiredIndex = getFirstVisiblePosition();
             View child = null;
             int overlapValue = 0;
             View overlapView = null;
-            for (desiredIndex = getFirstVisiblePosition(); desiredIndex < getLastVisiblePosition(); desiredIndex++) {
+            Log.d("setPositionBasedOnLeftOffset", "getFirstVisiblePosition()="
+                    + getFirstVisiblePosition() + ", getLastVisiblePosition()="
+                    + getLastVisiblePosition());
+            for (desiredIndex = getFirstVisiblePosition(); desiredIndex <= getLastVisiblePosition(); desiredIndex++) {
+                Log.d("setPositionBasedOnLeftOffset", "get child at "
+                        + (desiredIndex - getFirstVisiblePosition()));
                 child = getChildAt(desiredIndex - getFirstVisiblePosition());
+                Log.d("setPositionBasedOnLeftOffset", "child " + child);
                 // TODO We need better condition here
                 if (child != null) {
                     // When Old child is inside new child bounds
@@ -167,6 +177,9 @@ public class HorizListView extends HListView {
                     // | | new child | |
                     if (child.getLeft() <= leftOffset
                             && child.getRight() >= leftOffset + viewWidth) {
+                        Log.d("setPositionBasedOnLeftOffset",
+                                "When Old child is inside new child bounds, "
+                                        + child.getLeft());
                         overlapView = null;
                         overlapValue = 0;
                         break;
@@ -180,10 +193,17 @@ public class HorizListView extends HListView {
                         overlapView = child;
                         overlapValue = child.getWidth()
                                 - (leftOffset - child.getLeft());
+                        Log.d("setPositionBasedOnLeftOffset",
+                                "When Old child is between two possible new child's bounds (LEFT CHILD), "
+                                        + child.getLeft() + ", "
+                                        + child.getRight());
                     }
                     // When new child is inside old child
                     else if (child.getLeft() > leftOffset
                             && child.getRight() < leftOffset + viewWidth) {
+                        Log.d("setPositionBasedOnLeftOffset",
+                                "When new child is inside old child "
+                                        + child.getLeft());
                         overlapView = null;
                         overlapValue = 0;
                         break;
@@ -201,13 +221,24 @@ public class HorizListView extends HListView {
                         } else {
                             desiredIndex--;
                         }
+                        Log.d("setPositionBasedOnLeftOffset",
+                                "When Old child is between two possible new child's bounds (RIGHT CHILD), "
+                                        + child.getLeft() + ", "
+                                        + child.getRight());
                         break;
+                    } else {
+                        Log.d("setPositionBasedOnLeftOffset",
+                                "ELSE!!!!!, left=" + child.getLeft()
+                                        + ", right=" + child.getRight());
                     }
                 }
             }
             if (overlapView != null) {
                 child = overlapView;
             }
+            Log.d("setPositionBasedOnLeftOffset",
+                    "child.getLeft()=" + child.getLeft() + ", desiredIndex="
+                            + desiredIndex);
             setSelectionFromLeft(desiredIndex,
                     child == null ? 0 : child.getLeft());
             setSelectionInt(desiredIndex);

@@ -112,7 +112,11 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
         public HListAdapter() {
             Random rand = new Random();
             for (int i = 0; i < 20; i++) {
-                mElementWidths.put(i, 100 + rand.nextInt(300));
+                if (i < 10) {
+                    mElementWidths.put(i, 100 * (i + 1));
+                } else {
+                    mElementWidths.put(i, 100 + rand.nextInt(200));
+                }
             }
         }
 
@@ -140,9 +144,9 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
                 convertView = new TextView(ctx);
                 convertView.setPadding(20, 20, 20, 20);
                 ((TextView) convertView).setTextSize(25);
-                convertView.setLayoutParams(new LayoutParams(mElementWidths
-                        .get(position), LayoutParams.MATCH_PARENT));
             }
+            convertView.setLayoutParams(new LayoutParams(mElementWidths
+                    .get(position), LayoutParams.MATCH_PARENT));
             ((TextView) convertView).setText("" + (position + 1));
             return convertView;
         }
