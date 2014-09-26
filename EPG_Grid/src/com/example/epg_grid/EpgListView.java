@@ -72,12 +72,17 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                     int newPosition = getSelectedItemPosition() + 1;
                     mFocusedView = (HorizListView) getSelectedView()
                             .findViewById(R.id.hlist);
-                    FocusedViewInfo viewInfo = mFocusedView.new FocusedViewInfo(
-                            mFocusedView.getSelectedView());// ViewInfoForElementAt(oldViewPosition);
+                    FocusedViewInfo viewInfo = mFocusedView
+                            .getViewInfoForElementAt(mFocusedView
+                                    .getSelectedItemPosition());
                     mElementLeftOffset = viewInfo.getLeft();
                     ((VerticalListInterface) getAdapter())
                             .setCurrentScrollPosition(mTotalLeftOffset,
                                     mElementLeftOffset, viewInfo.getWidth());
+                    // We must first call onKeyDown and then set selection to
+                    // list
+                    // because of onLayout() method was called several times
+                    boolean retVal = super.onKeyDown(keyCode, event);
                     if (newPosition <= getLastVisiblePosition()) {
                         HorizListView newFocusedView = (HorizListView) getChildAt(
                                 newPosition - getFirstVisiblePosition())
@@ -85,7 +90,7 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                         newFocusedView.setPositionBasedOnLeftOffset(
                                 mElementLeftOffset, viewInfo.getWidth());
                     }
-                    return super.onKeyDown(keyCode, event);
+                    return retVal;
                 }
                 return false;
             }
@@ -94,12 +99,17 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                     int newPosition = getSelectedItemPosition() - 1;
                     mFocusedView = (HorizListView) getSelectedView()
                             .findViewById(R.id.hlist);
-                    FocusedViewInfo viewInfo = mFocusedView.new FocusedViewInfo(
-                            mFocusedView.getSelectedView());
+                    FocusedViewInfo viewInfo = mFocusedView
+                            .getViewInfoForElementAt(mFocusedView
+                                    .getSelectedItemPosition());
                     mElementLeftOffset = viewInfo.getLeft();
                     ((VerticalListInterface) getAdapter())
                             .setCurrentScrollPosition(mTotalLeftOffset,
                                     mElementLeftOffset, viewInfo.getWidth());
+                    // We must first call onKeyDown and then set selection to
+                    // list
+                    // because of onLayout() method was called several times
+                    boolean retVal = super.onKeyDown(keyCode, event);
                     if (newPosition >= getFirstVisiblePosition()) {
                         HorizListView newFocusedView = (HorizListView) getChildAt(
                                 newPosition - getFirstVisiblePosition())
@@ -107,7 +117,7 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                         newFocusedView.setPositionBasedOnLeftOffset(
                                 mElementLeftOffset, viewInfo.getWidth());
                     }
-                    return super.onKeyDown(keyCode, event);
+                    return retVal;
                 }
                 return false;
             }

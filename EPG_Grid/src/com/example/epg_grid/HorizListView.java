@@ -133,12 +133,15 @@ public class HorizListView extends HListView {
      * @return Object that contains desired view position informations
      */
     public FocusedViewInfo getViewInfoForElementAt(int position) {
-        int desiredPosition = position - getFirstVisiblePosition();
-        if (desiredPosition > getLastVisiblePosition()) {
-            desiredPosition = getLastVisiblePosition();
-        } else if (desiredPosition < getFirstVisiblePosition()) {
-            desiredPosition = getFirstVisiblePosition();
+        if (position > getLastVisiblePosition()) {
+            position = getLastVisiblePosition();
+        } else if (position < getFirstVisiblePosition()) {
+            position = getFirstVisiblePosition();
         }
+        int desiredPosition = position - getFirstVisiblePosition();
+        Log.d("getViewInfoForElementAt", "getLastVisiblePosition()="
+                + getLastVisiblePosition() + ", getFirstVisiblePosition()="
+                + getFirstVisiblePosition());
         Log.d("getViewInfoForElementAt", "position=" + position
                 + ", desiredPosition=" + desiredPosition);
         View c = getChildAt(desiredPosition);
@@ -239,9 +242,11 @@ public class HorizListView extends HListView {
             Log.d("setPositionBasedOnLeftOffset",
                     "child.getLeft()=" + child.getLeft() + ", desiredIndex="
                             + desiredIndex);
+            shouldIScroll = false;
             setSelectionFromLeft(desiredIndex,
                     child == null ? 0 : child.getLeft());
             setSelectionInt(desiredIndex);
+            shouldIScroll = true;
         } else {
             throw new RuntimeException(
                     "Adapter is not implementing HorizontalListInterface!");
