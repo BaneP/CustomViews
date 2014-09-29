@@ -13,16 +13,26 @@ import android.widget.TextView;
 
 import com.example.epg_grid.HorizListView.OnScrollHappenedListener;
 
-import it.sephiroth.android.library.widget.AbsHListView.LayoutParams;
-
 import java.lang.ref.WeakReference;
-import java.util.Random;
 
 public class ListAdapter extends BaseAdapter implements VerticalListInterface {
     private LayoutInflater inflater;
     private Context ctx;
     private OnScrollHappenedListener mOnScrollHappenedListener;
     private int mTotalLeftOffset = 0, mLeftOffset = 0, mFocusedViewWidth = 0;
+    public static SparseIntArray mElementWidthsStatic = new SparseIntArray();
+    static {
+        mElementWidthsStatic.put(0, 120);
+        mElementWidthsStatic.append(1, 250);
+        mElementWidthsStatic.append(2, 200);
+        mElementWidthsStatic.append(3, 400);
+        mElementWidthsStatic.append(4, 320);
+        mElementWidthsStatic.append(5, 50);
+        mElementWidthsStatic.append(6, 500);
+        mElementWidthsStatic.append(7, 380);
+        mElementWidthsStatic.append(8, 220);
+        mElementWidthsStatic.append(9, 450);
+    }
 
     public ListAdapter(Context ctx) {
         this.inflater = LayoutInflater.from(ctx);
@@ -59,19 +69,21 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder = null;
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.list_item_epg, null);
+            convertView = inflater.inflate(R.layout.epg_list_item, null);
             holder = new ViewHolder(convertView);
             holder.hList.setOnScrollHappenedListener(mOnScrollHappenedListener);
             convertView.setTag(holder);
             convertView.setLayoutParams(new AbsListView.LayoutParams(
-                    AbsListView.LayoutParams.MATCH_PARENT, 150));
+                    AbsListView.LayoutParams.MATCH_PARENT, ctx.getResources()
+                            .getDimensionPixelSize(R.dimen.list_item_height)));
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
         holder.number.setText((position + 1) + ".");
         holder.hList.getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewObserver(holder.hList));
-        holder.hList.setAdapter(new HListAdapter());
+        holder.hList
+                .setAdapter(new HorizListAdapter(ctx, mElementWidthsStatic));
         holder.hList.setPositionBasedOnLeftOffsetFromAdapter(mTotalLeftOffset,
                 mLeftOffset, mFocusedViewWidth);
         return convertView;
@@ -82,8 +94,9 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
         HorizListView hList;
 
         public ViewHolder(View convertView) {
-            number = (TextView) convertView.findViewById(R.id.textview);
-            hList = (HorizListView) convertView.findViewById(R.id.hlist);
+            number = (TextView) convertView.findViewById(
+                    R.id.epg_channel_indicator).findViewById(R.id.textview);
+            hList = (HorizListView) convertView.findViewById(R.id.epg_hlist);
         }
     }
 
@@ -103,62 +116,6 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
             observer.removeOnGlobalLayoutListener(this);
             mViewToObserve.get().setPositionBasedOnLeftOffsetFromAdapter(
                     mTotalLeftOffset, mLeftOffset, mFocusedViewWidth);
-        }
-    }
-
-    class HListAdapter extends BaseAdapter implements HorizontalListInterface {
-        private SparseIntArray mElementWidths = new SparseIntArray();
-
-        public HListAdapter() {
-            Random rand = new Random();
-            for (int i = 0; i < 20; i++) {
-                if (i < 10) {
-                    mElementWidths.put(i, 100 * (i + 1));
-                } else {
-                    mElementWidths.put(i, 100 + rand.nextInt(200));
-                }
-            }
-        }
-
-        @Override
-        public int getCount() {
-            // TODO Auto-generated method stub
-            return 20;
-        }
-
-        @Override
-        public Object getItem(int position) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            // TODO Auto-generated method stub
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                convertView = new TextView(ctx);
-                convertView.setPadding(20, 20, 20, 20);
-                ((TextView) convertView).setTextSize(25);
-            }
-            convertView.setLayoutParams(new LayoutParams(mElementWidths
-                    .get(position), LayoutParams.MATCH_PARENT));
-            ((TextView) convertView).setText("" + (position + 1));
-            return convertView;
-        }
-
-        @Override
-        public SparseIntArray getElementWidths() {
-            return mElementWidths;
-        }
-
-        @Override
-        public int getElementWidth(int position) {
-            return mElementWidths.get(position, 0);
         }
     }
 

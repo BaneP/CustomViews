@@ -2,7 +2,6 @@ package com.example.epg_grid;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
@@ -11,10 +10,10 @@ import android.widget.ListView;
 import com.example.epg_grid.HorizListView.FocusedViewInfo;
 import com.example.epg_grid.HorizListView.OnScrollHappenedListener;
 
-public class EpgListView extends ListView implements OnScrollHappenedListener {
+public class EpgListView extends ListView {
     private HorizListView mFocusedView;
-    int mTotalLeftOffset = 0;
-    int mElementLeftOffset = 0;
+    private int mTotalLeftOffset = 0;
+    private int mElementLeftOffset = 0;
 
     public EpgListView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -38,23 +37,37 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
 
     @Override
     public void setAdapter(ListAdapter adapter) {
-        if (adapter instanceof VerticalListInterface) {
-            ((VerticalListInterface) adapter).setOnScrollHappenedListener(this);
-        } else {
+        if (!(adapter instanceof VerticalListInterface)) {
             throw new RuntimeException(
                     "Adapter is not implementing VerticalListInterface!");
         }
         super.setAdapter(adapter);
     }
 
-    @Override
+    /**
+     * Method called to scroll vertical list view children
+     * 
+     * @param v
+     *        View that is scrolled
+     * @param offset
+     *        Offset difference of scroll (how much pixels view is scrolled)
+     * @param totalOffset
+     *        Total left offset of scrolled list
+     */
     public void scrollTo(HorizListView v, int offset, int totalOffset) {
         mTotalLeftOffset = totalOffset;
-        for (int i = 0; i < getChildCount(); i++) {
-            HorizListView hlist = (HorizListView) getChildAt(i).findViewById(
-                    R.id.hlist);
-            if (hlist != v) {
-                hlist.scrollListByPixels(offset);
+        if (getChildCount() > 0) {
+            HorizListView hlist = (HorizListView) getChildAt(0).findViewById(
+                    R.id.epg_hlist);
+            FocusedViewInfo viewInfo = hlist.getViewInfoForElementAt(0);
+            ((VerticalListInterface) getAdapter()).setCurrentScrollPosition(
+                    mTotalLeftOffset, viewInfo.getLeft(), viewInfo.getWidth());
+            for (int i = 0; i < getChildCount(); i++) {
+                hlist = (HorizListView) getChildAt(i).findViewById(
+                        R.id.epg_hlist);
+                if (hlist != v) {
+                    hlist.scrollListByPixels(offset);
+                }
             }
         }
     }
@@ -71,7 +84,7 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                 if (getSelectedItemPosition() < getAdapter().getCount() - 1) {
                     int newPosition = getSelectedItemPosition() + 1;
                     mFocusedView = (HorizListView) getSelectedView()
-                            .findViewById(R.id.hlist);
+                            .findViewById(R.id.epg_hlist);
                     FocusedViewInfo viewInfo = mFocusedView
                             .getViewInfoForElementAt(mFocusedView
                                     .getSelectedItemPosition());
@@ -86,7 +99,7 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                     if (newPosition <= getLastVisiblePosition()) {
                         HorizListView newFocusedView = (HorizListView) getChildAt(
                                 newPosition - getFirstVisiblePosition())
-                                .findViewById(R.id.hlist);
+                                .findViewById(R.id.epg_hlist);
                         newFocusedView.setPositionBasedOnLeftOffset(
                                 mElementLeftOffset, viewInfo.getWidth());
                     }
@@ -98,7 +111,7 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                 if (getSelectedItemPosition() > 0) {
                     int newPosition = getSelectedItemPosition() - 1;
                     mFocusedView = (HorizListView) getSelectedView()
-                            .findViewById(R.id.hlist);
+                            .findViewById(R.id.epg_hlist);
                     FocusedViewInfo viewInfo = mFocusedView
                             .getViewInfoForElementAt(mFocusedView
                                     .getSelectedItemPosition());
@@ -113,7 +126,7 @@ public class EpgListView extends ListView implements OnScrollHappenedListener {
                     if (newPosition >= getFirstVisiblePosition()) {
                         HorizListView newFocusedView = (HorizListView) getChildAt(
                                 newPosition - getFirstVisiblePosition())
-                                .findViewById(R.id.hlist);
+                                .findViewById(R.id.epg_hlist);
                         newFocusedView.setPositionBasedOnLeftOffset(
                                 mElementLeftOffset, viewInfo.getWidth());
                     }

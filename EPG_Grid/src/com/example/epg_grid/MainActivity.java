@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 public class MainActivity extends Activity {
-    private EpgListView list;
+    private EpgGrid list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -15,7 +15,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         // mEpgGrid = (EpgGridView) findViewById(R.id.epgGridView1);
         // mEpgGrid.setAdapter(new EpgAdapter(this));
-        list = (EpgListView) findViewById(R.id.listView1);
-        list.setAdapter(new ListAdapter(this));
+        // list = (EpgGrid) findViewById(R.id.listView1);
+        // list.setAdapter(new ListAdapter(this));
     }
 }

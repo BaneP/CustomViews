@@ -10,10 +10,10 @@
     <!-- android:layout_height="match_parent" > -->
     <!-- </com.example.epg_grid.EpgGridView> -->
 
-    <com.example.epg_grid.EpgListView
+    <com.example.epg_grid.EpgGrid
         android:id="@+id/listView1"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
-    </com.example.epg_grid.EpgListView>
+    </com.example.epg_grid.EpgGrid>
 
 </RelativeLayout>

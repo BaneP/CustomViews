@@ -2,26 +2,47 @@ package com.example.epg_grid;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 
+import it.sephiroth.android.library.widget.AbsHListView;
 import it.sephiroth.android.library.widget.HListView;
 
+/**
+ * Horizontal list view that is populated by some events.
+ * 
+ * @author Branimir Pavlovic
+ */
 public class HorizListView extends HListView {
+    /**
+     * Listener to call when list is scrolled horizontally
+     * 
+     * @author Branimir Pavlovic
+     */
     public interface OnScrollHappenedListener {
         public void scrollTo(HorizListView v, int offset, int totalOffset);
     }
 
     private OnScrollHappenedListener mScrollHappened;
-    private boolean shouldIScroll = true;
-    private boolean isPressed = false;
+    /**
+     * Flag that indicates if callback should be called
+     */
+    private boolean shouldISendCallback = true;
+    /**
+     * Holds current scroll offset of this horizontal list view
+     */
     private int mOldOffset = 0;
+    /**
+     * Flag that indicates if this list view is in touch scroll
+     */
+    private boolean isInTouchScroll;
+    /**
+     * Flag that indicates if this list view should be scrollable by user
+     */
+    private boolean canScrollManually = true;
 
     public HorizListView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -40,69 +61,84 @@ public class HorizListView extends HListView {
 
     private void init(Context context) {
         setDividerWidth(0);
+        setOverScrollMode(OVER_SCROLL_NEVER);
     }
 
-    @Override
-    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-        int childPosition = getPositionForView(child);
-        // Log.d("SHILD WIDTH", "" + child.getWidth());
-        if (getAdapter() instanceof HorizontalListInterface) {
-            ((HorizontalListInterface) getAdapter()).getElementWidths().put(
-                    childPosition, child.getWidth());
-        } else {
-            throw new RuntimeException(
-                    "Adapter is not implementing HorizontalListInterface!");
-        }
-        return super.drawChild(canvas, child, drawingTime);
+    public void registerTouchScrollListener() {
+        setOnScrollListener(mOnScrollListener);
     }
+
+    private OnScrollListener mOnScrollListener = new OnScrollListener() {
+        @Override
+        public void onScrollStateChanged(AbsHListView view, int scrollState) {
+            Log.d("onScrollStateChanged", "SCROLL STATE=" + scrollState);
+            switch (scrollState) {
+                case SCROLL_STATE_IDLE: {
+                    isInTouchScroll = false;
+                    shouldISendCallback = true;
+                    break;
+                }
+                case SCROLL_STATE_FLING: {
+                    break;
+                }
+                case SCROLL_STATE_TOUCH_SCROLL: {
+                    isInTouchScroll = true;
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        @Override
+        public void onScroll(AbsHListView view, int firstVisibleItem,
+                int visibleItemCount, int totalItemCount) {
+            Log.d("onScroll", "firstVisibleItem=" + firstVisibleItem);
+            if (getAdapter() != null) {
+                if (getAdapter() instanceof HorizontalListInterface) {
+                    View c = getChildAt(0);
+                    // Calculate current list scroll position
+                    int leftOffset = 0;
+                    for (int i = 0; i < firstVisibleItem; i++) {
+                        leftOffset += ((HorizontalListInterface) getAdapter())
+                                .getElementWidths().get(i);
+                    }
+                    if (c != null) {
+                        // Current list scroll position minus first child
+                        // invisible
+                        // part
+                        leftOffset = leftOffset - c.getLeft();
+                        Log.d("onScroll", "shouldIScroll="
+                                + shouldISendCallback
+                                + ", mOldOffset != leftOffset: "
+                                + (mOldOffset != leftOffset) + ", hasFocus()="
+                                + hasFocus() + ", isInTouchScroll="
+                                + isInTouchScroll);
+                        // Send scroll event trough listener
+                        if (mScrollHappened != null && shouldISendCallback
+                                && mOldOffset != leftOffset
+                                && (hasFocus() || isInTouchScroll)) {
+                            mScrollHappened.scrollTo(HorizListView.this,
+                                    leftOffset - mOldOffset, leftOffset);
+                        }
+                    }
+                    // Save old offset value
+                    mOldOffset = leftOffset;
+                } else {
+                    throw new RuntimeException(
+                            "Adapter is not implementing HorizontalListInterface!");
+                }
+            }
+        }
+    };
 
     @Override
     @SuppressLint("Override")
     public boolean onTouchEvent(MotionEvent ev) {
-        switch (ev.getAction()) {
-            case MotionEvent.ACTION_DOWN: {
-                isPressed = true;
-                break;
-            }
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP: {
-                isPressed = false;
-                break;
-            }
-            default:
-                break;
+        if (!canScrollManually) {
+            return true;
         }
         return super.onTouchEvent(ev);
-    }
-
-    @Override
-    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-        if (getAdapter() instanceof HorizontalListInterface) {
-            View c = getChildAt(0);
-            // Calculate current list scroll position
-            int leftOffset = 0;
-            for (int i = 0; i < getFirstVisiblePosition(); i++) {
-                leftOffset += ((HorizontalListInterface) getAdapter())
-                        .getElementWidths().get(i);
-            }
-            if (c != null) {
-                // Current list scroll position minus first child invisible part
-                leftOffset = leftOffset - c.getLeft();
-                // Send scroll event trough listener
-                if (mScrollHappened != null && shouldIScroll
-                        && mOldOffset != leftOffset
-                        && (hasFocus() || isPressed)) {
-                    mScrollHappened.scrollTo(this, leftOffset - mOldOffset,
-                            leftOffset);
-                }
-            }
-            // Save old offset value
-            mOldOffset = leftOffset;
-            super.onScrollChanged(l, t, oldl, oldt);
-        } else {
-            throw new RuntimeException(
-                    "Adapter is not implementing HorizontalListInterface!");
-        }
     }
 
     /**
@@ -242,11 +278,11 @@ public class HorizListView extends HListView {
             Log.d("setPositionBasedOnLeftOffset",
                     "child.getLeft()=" + child.getLeft() + ", desiredIndex="
                             + desiredIndex);
-            shouldIScroll = false;
+            shouldISendCallback = false;
             setSelectionFromLeft(desiredIndex,
                     child == null ? 0 : child.getLeft());
             setSelectionInt(desiredIndex);
-            shouldIScroll = true;
+            shouldISendCallback = true;
         } else {
             throw new RuntimeException(
                     "Adapter is not implementing HorizontalListInterface!");
@@ -268,6 +304,8 @@ public class HorizListView extends HListView {
      */
     public void setPositionBasedOnLeftOffsetFromAdapter(
             final int totalLeftOffset, final int leftOffset, final int viewWidth) {
+        Log.d("setPositionBasedOnLeftOffsetFromAdapter", "totalLeftOffset="
+                + totalLeftOffset);
         if (getAdapter() instanceof HorizontalListInterface) {
             SparseIntArray elementWidths = ((HorizontalListInterface) getAdapter())
                     .getElementWidths();
@@ -333,10 +371,10 @@ public class HorizListView extends HListView {
             if (overlapWidthSum != 0) {
                 widthSum = overlapWidthSum;
             }
-            shouldIScroll = false;
+            shouldISendCallback = false;
             setSelectionFromLeft(desiredIndex, widthSum - totalLeftOffset);
             setSelectionInt(desiredIndex);
-            shouldIScroll = true;
+            shouldISendCallback = true;
         } else {
             throw new RuntimeException(
                     "Adapter is not implementing HorizontalListInterface!");
@@ -344,9 +382,8 @@ public class HorizListView extends HListView {
     }
 
     public void scrollListByPixels(int y) {
-        shouldIScroll = false;
+        shouldISendCallback = false;
         super.smoothScrollBy(y, 0);
-        shouldIScroll = true;
     }
 
     class FocusedViewInfo {
@@ -375,6 +412,15 @@ public class HorizListView extends HListView {
 
     public void setOnScrollHappenedListener(
             OnScrollHappenedListener mScrollHappened) {
+        registerTouchScrollListener();
         this.mScrollHappened = mScrollHappened;
+    }
+
+    public boolean isManuallyScrollable() {
+        return canScrollManually;
+    }
+
+    public void setManuallyScrollable(boolean canScrollManually) {
+        this.canScrollManually = canScrollManually;
     }
 }
