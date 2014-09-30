@@ -2,6 +2,7 @@ package com.example.epg_grid;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -223,8 +224,14 @@ public class HorizListView extends HListView {
                     Log.d("setPositionBasedOnLeftOffset", "get child at "
                             + (desiredIndex - getFirstVisiblePosition()));
                     child = getChildAt(desiredIndex - getFirstVisiblePosition());
-                    if (isFromEmpty && getAdapter().isEnabled(desiredIndex)) {
-                        break;
+                    // If focus is gained from dummy element we just need to
+                    // find first visible enabled item
+                    if (isFromEmpty) {
+                        if (getAdapter().isEnabled(desiredIndex)) {
+                            break;
+                        } else {
+                            continue;
+                        }
                     }
                     Log.d("setPositionBasedOnLeftOffset", "child " + child);
                     // TODO We need better condition here

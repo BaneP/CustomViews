@@ -3,12 +3,12 @@ package com.example.epg_grid;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.example.epg_grid.HorizListView.FocusedViewInfo;
-import com.example.epg_grid.HorizListView.OnScrollHappenedListener;
 
 public class EpgListView extends ListView {
     private HorizListView mFocusedView;
@@ -74,8 +74,6 @@ public class EpgListView extends ListView {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        // Log.d("onKeyListener", "KEY CODE" + keyCode
-        // + ", SELECTED ITEM POSITION=" + getSelectedItemPosition());
         if (getSelectedItemPosition() == INVALID_POSITION) {
             return super.onKeyDown(keyCode, event);
         }
@@ -96,13 +94,23 @@ public class EpgListView extends ListView {
                     ((VerticalListInterface) getAdapter())
                             .setCurrentScrollPosition(mTotalLeftOffset,
                                     mElementLeftOffset, viewInfo.getWidth());
-                    // We must first call onKeyDown and then set selection to
-                    // list
-                    // because of onLayout() method was called several times
-                    boolean retVal = super.onKeyDown(keyCode, event);
                     if (newPosition <= getLastVisiblePosition()) {
-                        HorizListView newFocusedView = (HorizListView) getChildAt(
-                                newPosition - getFirstVisiblePosition())
+                        View nextView = getChildAt(newPosition
+                                - getFirstVisiblePosition());
+                        // We must first select next child and then set
+                        // selection to
+                        // horizontal list
+                        // because of onLayout() method was called several
+                        // times.
+                        if (newPosition < getLastVisiblePosition()) {
+                            setSelectionFromTop(newPosition, nextView.getTop());
+                        }
+                        // Last element must be whole visible
+                        else {
+                            setSelectionFromTop(newPosition, getHeight()
+                                    - nextView.getHeight());
+                        }
+                        HorizListView newFocusedView = (HorizListView) nextView
                                 .findViewById(R.id.epg_hlist);
                         // This will be NULL if adapter is empty
                         if (newFocusedView != null) {
@@ -112,7 +120,12 @@ public class EpgListView extends ListView {
                                             * EpgGrid.NUMBER_OF_MINUTES_IN_DAY);
                         }
                     }
-                    return retVal;
+                    // For elements not yet visible
+                    else {
+                        setSelectionFromTop(newPosition, getSelectedView()
+                                .getTop());
+                    }
+                    return true;
                 }
                 return false;
             }
@@ -128,23 +141,38 @@ public class EpgListView extends ListView {
                     ((VerticalListInterface) getAdapter())
                             .setCurrentScrollPosition(mTotalLeftOffset,
                                     mElementLeftOffset, viewInfo.getWidth());
-                    // We must first call onKeyDown and then set selection to
-                    // list
-                    // because of onLayout() method was called several times
-                    boolean retVal = super.onKeyDown(keyCode, event);
                     if (newPosition >= getFirstVisiblePosition()) {
+                        View nextView = getChildAt(newPosition
+                                - getFirstVisiblePosition());
+                        // We must first select next child and then set
+                        // selection to
+                        // horizontal list
+                        // because of onLayout() method was called several
+                        // times.
+                        if (newPosition > getFirstVisiblePosition()) {
+                            setSelectionFromTop(newPosition, nextView.getTop());
+                        }
+                        // First element must be whole visible
+                        else {
+                            setSelectionFromTop(newPosition, 0);
+                        }
                         HorizListView newFocusedView = (HorizListView) getChildAt(
                                 newPosition - getFirstVisiblePosition())
                                 .findViewById(R.id.epg_hlist);
                         // This will be NULL if adapter is empty
                         if (newFocusedView != null) {
+                            boolean isEmpty = viewInfo.getWidth() == oneMinuteWidth
+                                    * EpgGrid.NUMBER_OF_MINUTES_IN_DAY;
                             newFocusedView.setPositionBasedOnLeftOffset(
                                     mElementLeftOffset, viewInfo.getWidth(),
-                                    viewInfo.getWidth() == oneMinuteWidth
-                                            * EpgGrid.NUMBER_OF_MINUTES_IN_DAY);
+                                    isEmpty);
                         }
                     }
-                    return retVal;
+                    // For elements not yet visible
+                    else {
+                        setSelectionFromTop(newPosition, 0);
+                    }
+                    return true;
                 }
                 return false;
             }

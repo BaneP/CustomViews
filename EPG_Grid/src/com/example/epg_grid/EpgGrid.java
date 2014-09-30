@@ -46,6 +46,7 @@ public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
                 a.recycle();
             }
         }
+        setOrientation(LinearLayout.VERTICAL);
         LayoutInflater.from(context).inflate(R.layout.epg_grid, this);
         // Initialize vertical list view
         mEpgVerticalList = (EpgListView) findViewById(R.id.listViewEpg);
