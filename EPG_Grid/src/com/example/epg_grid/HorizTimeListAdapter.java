@@ -12,17 +12,15 @@ import com.iwedia.dtv.epg.EpgEvent;
 
 import it.sephiroth.android.library.widget.AbsHListView.LayoutParams;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Random;
 
-public class HorizListAdapter extends BaseAdapter implements
+public class HorizTimeListAdapter extends BaseAdapter implements
         HorizontalListInterface {
     private ArrayList<HorizTimeObject<EpgEvent>> mElementWidths;
     private Context ctx;
-    protected static final SimpleDateFormat sFormat = new SimpleDateFormat(
-            "HH:mm:ss");
 
-    public HorizListAdapter(Context ctx,
+    public HorizTimeListAdapter(Context ctx,
             ArrayList<HorizTimeObject<EpgEvent>> elementWidths) {
         this.ctx = ctx;
         this.mElementWidths = elementWidths;
@@ -46,41 +44,15 @@ public class HorizListAdapter extends BaseAdapter implements
     }
 
     @Override
-    public boolean areAllItemsEnabled() {
-        return false;
-    }
-
-    @Override
-    public boolean isEnabled(int position) {
-        return mElementWidths.get(position).isRealEvent();
-    }
-
-    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
             convertView = new TextView(ctx);
-            convertView.setPadding(5, 5, 5, 5);
-            ((TextView) convertView).setTextSize(14);
+            convertView.setPadding(20, 20, 20, 20);
+            ((TextView) convertView).setTextSize(25);
         }
         convertView.setLayoutParams(new LayoutParams(mElementWidths.get(
                 position).getWidth(), LayoutParams.MATCH_PARENT));
-        EpgEvent event = mElementWidths.get(position).getObject();
-        if (event != null) {
-            ((TextView) convertView).setText(event.getName() + "\n"
-                    + String.format("%02d", event.getStartTime().getHour())
-                    + ":"
-                    + String.format("%02d", event.getStartTime().getMin())
-                    + " " + event.getStartTime().getDay() + " - "
-                    + String.format("%02d", event.getEndTime().getHour()) + ":"
-                    + String.format("%02d", event.getEndTime().getMin()) + " "
-                    + event.getEndTime().getDay());
-        } else {
-            if (mElementWidths.get(position).isRealEvent()) {
-                ((TextView) convertView).setText("No data available!");
-            } else {
-                ((TextView) convertView).setText("");
-            }
-        }
+        ((TextView) convertView).setText(position + "");
         return convertView;
     }
 

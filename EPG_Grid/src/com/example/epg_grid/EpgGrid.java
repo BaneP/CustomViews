@@ -1,36 +1,55 @@
 package com.example.epg_grid;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 
 import com.example.epg_grid.HorizListView.OnScrollHappenedListener;
+import com.iwedia.dtv.epg.EpgEvent;
+
+import java.util.ArrayList;
 
 public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
+    private static final int ONE_MINUTE_PIXELS_WIDTH = 10;
+    public static final int NUMBER_OF_MINUTES_IN_DAY = 1440;
     private EpgListView mEpgVerticalList;
     private HorizListView mEpgTimeLineList;
+    private int mOneMinutePixelWidth = ONE_MINUTE_PIXELS_WIDTH;
 
     public EpgGrid(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        init(context);
+        init(context, attrs);
     }
 
     public EpgGrid(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+        init(context, attrs);
     }
 
     public EpgGrid(Context context) {
         super(context);
-        init(context);
+        init(context, null);
     }
 
-    private void init(Context context) {
+    private void init(Context context, AttributeSet attrs) {
+        if (attrs != null) {
+            TypedArray a = context.getTheme().obtainStyledAttributes(attrs,
+                    R.styleable.EpgGrid, 0, 0);
+            try {
+                mOneMinutePixelWidth = a.getDimensionPixelSize(
+                        R.styleable.EpgGrid_minutePixelsWidth,
+                        ONE_MINUTE_PIXELS_WIDTH);
+            } finally {
+                a.recycle();
+            }
+        }
         LayoutInflater.from(context).inflate(R.layout.epg_grid, this);
         // Initialize vertical list view
         mEpgVerticalList = (EpgListView) findViewById(R.id.listViewEpg);
-        ListAdapter adapter = new ListAdapter(context);
+        ListAdapter adapter = new ListAdapter(context, mOneMinutePixelWidth);
         adapter.setOnScrollHappenedListener(this);
         mEpgVerticalList.setAdapter(adapter);
         // Initialize time line view
@@ -39,8 +58,14 @@ public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
         mEpgTimeLineList.setFocusable(false);
         mEpgTimeLineList.setManuallyScrollable(false);
         mEpgTimeLineList.setItemsCanFocus(false);
-        mEpgTimeLineList.setAdapter(new HorizListAdapter(context,
-                ListAdapter.mElementWidthsStatic));
+        ArrayList<HorizTimeObject<EpgEvent>> timeList = new ArrayList<HorizTimeObject<EpgEvent>>(
+                24);
+        for (int i = 0; i < 24; i++) {
+            timeList.add(new HorizTimeObject<EpgEvent>(
+                    mOneMinutePixelWidth * 60, null));
+        }
+        mEpgTimeLineList
+                .setAdapter(new HorizTimeListAdapter(context, timeList));
     }
 
     @Override
@@ -49,5 +74,13 @@ public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
             mEpgTimeLineList.scrollListByPixels(offset);
         }
         mEpgVerticalList.scrollTo(v, offset, totalOffset);
+    }
+
+    public int getOneMinutePixelWidth() {
+        return mOneMinutePixelWidth;
+    }
+
+    public void setOneMinutePixelWidth(int mOneMinutePixelWidth) {
+        this.mOneMinutePixelWidth = mOneMinutePixelWidth;
     }
 }

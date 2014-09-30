@@ -1,48 +1,40 @@
 package com.example.epg_grid;
 
 import android.content.Context;
-import android.util.Log;
-import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.example.epg_grid.HorizListView.OnScrollHappenedListener;
+import com.example.epg_grid.dtv.DvbManager;
+import com.example.epg_grid.dtv.EpgAsyncTaskLoader;
 
-import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 public class ListAdapter extends BaseAdapter implements VerticalListInterface {
     private LayoutInflater inflater;
     private Context ctx;
     private OnScrollHappenedListener mOnScrollHappenedListener;
     private int mTotalLeftOffset = 0, mLeftOffset = 0, mFocusedViewWidth = 0;
-    public static SparseIntArray mElementWidthsStatic = new SparseIntArray();
-    static {
-        mElementWidthsStatic.put(0, 120);
-        mElementWidthsStatic.append(1, 250);
-        mElementWidthsStatic.append(2, 200);
-        mElementWidthsStatic.append(3, 400);
-        mElementWidthsStatic.append(4, 320);
-        mElementWidthsStatic.append(5, 50);
-        mElementWidthsStatic.append(6, 500);
-        mElementWidthsStatic.append(7, 380);
-        mElementWidthsStatic.append(8, 220);
-        mElementWidthsStatic.append(9, 450);
-    }
+    private int oneMinutePixelWidth;
+    private int mCount = 0;
+    private ArrayList<String> mChannels;
 
-    public ListAdapter(Context ctx) {
+    public ListAdapter(Context ctx, int oneMinutePixelWidth) {
         this.inflater = LayoutInflater.from(ctx);
         this.ctx = ctx;
+        this.oneMinutePixelWidth = oneMinutePixelWidth;
+        mCount = DvbManager.getInstance().getChannelListSize();
+        mChannels = DvbManager.getInstance().getChannelNames();
     }
 
     @Override
     public int getCount() {
         // TODO Auto-generated method stub
-        return 20;
+        return mCount;
     }
 
     @Override
@@ -79,13 +71,11 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        holder.number.setText((position + 1) + ".");
-        holder.hList.getViewTreeObserver().addOnGlobalLayoutListener(
-                new ViewObserver(holder.hList));
-        holder.hList
-                .setAdapter(new HorizListAdapter(ctx, mElementWidthsStatic));
-        holder.hList.setPositionBasedOnLeftOffsetFromAdapter(mTotalLeftOffset,
-                mLeftOffset, mFocusedViewWidth);
+        holder.number.setText(mChannels.get(position));
+        EpgAsyncTaskLoader loader = new EpgAsyncTaskLoader(holder.hList, ctx,
+                mTotalLeftOffset, mLeftOffset, mFocusedViewWidth);
+        loader.execute(position, oneMinutePixelWidth, 0);// TODO third param is
+                                                         // day
         return convertView;
     }
 
@@ -97,25 +87,6 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
             number = (TextView) convertView.findViewById(
                     R.id.epg_channel_indicator).findViewById(R.id.textview);
             hList = (HorizListView) convertView.findViewById(R.id.epg_hlist);
-        }
-    }
-
-    private class ViewObserver implements
-            ViewTreeObserver.OnGlobalLayoutListener {
-        WeakReference<HorizListView> mViewToObserve;
-
-        public ViewObserver(HorizListView viewToObserve) {
-            mViewToObserve = new WeakReference<HorizListView>(viewToObserve);
-        }
-
-        @Override
-        public void onGlobalLayout() {
-            Log.d("ON GLOBAL LAYOUT", "ENTERED");
-            ViewTreeObserver observer = mViewToObserve.get()
-                    .getViewTreeObserver();
-            observer.removeOnGlobalLayoutListener(this);
-            mViewToObserve.get().setPositionBasedOnLeftOffsetFromAdapter(
-                    mTotalLeftOffset, mLeftOffset, mFocusedViewWidth);
         }
     }
 

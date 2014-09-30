@@ -4,12 +4,16 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.SparseIntArray;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ProgressBar;
+
+import com.iwedia.dtv.epg.EpgEvent;
 
 import it.sephiroth.android.library.widget.AbsHListView;
 import it.sephiroth.android.library.widget.HListView;
+
+import java.util.ArrayList;
 
 /**
  * Horizontal list view that is populated by some events.
@@ -62,6 +66,10 @@ public class HorizListView extends HListView {
     private void init(Context context) {
         setDividerWidth(0);
         setOverScrollMode(OVER_SCROLL_NEVER);
+        ProgressBar progress = new ProgressBar(context);
+        progress.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT));
+        setEmptyView(progress);
     }
 
     public void registerTouchScrollListener() {
@@ -99,9 +107,10 @@ public class HorizListView extends HListView {
                     View c = getChildAt(0);
                     // Calculate current list scroll position
                     int leftOffset = 0;
+                    ArrayList<HorizTimeObject<EpgEvent>> events = ((HorizontalListInterface) getAdapter())
+                            .getElementWidths();
                     for (int i = 0; i < firstVisibleItem; i++) {
-                        leftOffset += ((HorizontalListInterface) getAdapter())
-                                .getElementWidths().get(i);
+                        leftOffset += events.get(i).getWidth();
                     }
                     if (c != null) {
                         // Current list scroll position minus first child
@@ -150,10 +159,10 @@ public class HorizListView extends HListView {
     public int getTotalOffsetForChildAt(int position) {
         if (getAdapter() instanceof HorizontalListInterface) {
             int topOffset = 0;
-            SparseIntArray elementWidths = ((HorizontalListInterface) getAdapter())
+            ArrayList<HorizTimeObject<EpgEvent>> elementWidths = ((HorizontalListInterface) getAdapter())
                     .getElementWidths();
             for (int i = 0; i < position; i++) {
-                topOffset += elementWidths.get(i);
+                topOffset += elementWidths.get(i).getWidth();
             }
             return topOffset;
         } else {
@@ -193,99 +202,110 @@ public class HorizListView extends HListView {
      *        Width of previously selected child
      */
     public void setPositionBasedOnLeftOffset(final int leftOffset,
-            final int viewWidth) {
+            final int viewWidth, boolean isFromEmpty) {
         Log.d("setPositionBasedOnLeftOffset", "leftOffset=" + leftOffset
                 + ", viewWidth=" + viewWidth);
-        if (getAdapter() instanceof HorizontalListInterface) {
-            int desiredIndex = getFirstVisiblePosition();
-            View child = null;
-            int overlapValue = 0;
-            View overlapView = null;
-            Log.d("setPositionBasedOnLeftOffset", "getFirstVisiblePosition()="
-                    + getFirstVisiblePosition() + ", getLastVisiblePosition()="
-                    + getLastVisiblePosition());
-            for (desiredIndex = getFirstVisiblePosition(); desiredIndex <= getLastVisiblePosition(); desiredIndex++) {
-                Log.d("setPositionBasedOnLeftOffset", "get child at "
-                        + (desiredIndex - getFirstVisiblePosition()));
-                child = getChildAt(desiredIndex - getFirstVisiblePosition());
-                Log.d("setPositionBasedOnLeftOffset", "child " + child);
-                // TODO We need better condition here
-                if (child != null) {
-                    // When Old child is inside new child bounds
-                    // | | old child | |
-                    // | | new child | |
-                    if (child.getLeft() <= leftOffset
-                            && child.getRight() >= leftOffset + viewWidth) {
-                        Log.d("setPositionBasedOnLeftOffset",
-                                "When Old child is inside new child bounds, "
-                                        + child.getLeft());
-                        overlapView = null;
-                        overlapValue = 0;
+        if (getAdapter() != null) {
+            if (getAdapter() instanceof HorizontalListInterface) {
+                if (getAdapter().getCount() == 0) {
+                    return;
+                }
+                int desiredIndex = getFirstVisiblePosition();
+                View child = null;
+                int overlapValue = 0;
+                View overlapView = null;
+                Log.d("setPositionBasedOnLeftOffset",
+                        "getFirstVisiblePosition()="
+                                + getFirstVisiblePosition()
+                                + ", getLastVisiblePosition()="
+                                + getLastVisiblePosition());
+                for (desiredIndex = getFirstVisiblePosition(); desiredIndex <= getLastVisiblePosition(); desiredIndex++) {
+                    Log.d("setPositionBasedOnLeftOffset", "get child at "
+                            + (desiredIndex - getFirstVisiblePosition()));
+                    child = getChildAt(desiredIndex - getFirstVisiblePosition());
+                    if (isFromEmpty && getAdapter().isEnabled(desiredIndex)) {
                         break;
                     }
-                    // When Old child is between two possible new child's bounds
-                    // (LEFT CHILD)
-                    // | | | old child | |
-                    // | new child | new child | |
-                    else if (child.getLeft() <= leftOffset
-                            && child.getRight() > leftOffset) {
-                        overlapView = child;
-                        overlapValue = child.getWidth()
-                                - (leftOffset - child.getLeft());
-                        Log.d("setPositionBasedOnLeftOffset",
-                                "When Old child is between two possible new child's bounds (LEFT CHILD), "
-                                        + child.getLeft() + ", "
-                                        + child.getRight());
-                    }
-                    // When new child is inside old child
-                    else if (child.getLeft() > leftOffset
-                            && child.getRight() < leftOffset + viewWidth) {
-                        Log.d("setPositionBasedOnLeftOffset",
-                                "When new child is inside old child "
-                                        + child.getLeft());
-                        overlapView = null;
-                        overlapValue = 0;
-                        break;
-                    }
-                    // When Old child is between two possible new child's bounds
-                    // (RIGHT CHILD)
-                    // | | | old child | |
-                    // | new child | new child | |
-                    else if (child.getLeft() > leftOffset
-                            && child.getRight() >= leftOffset + viewWidth) {
-                        int newOverlapValue = leftOffset + viewWidth
-                                - child.getLeft();
-                        if (newOverlapValue > overlapValue) {
-                            overlapView = child;
-                        } else {
-                            desiredIndex--;
+                    Log.d("setPositionBasedOnLeftOffset", "child " + child);
+                    // TODO We need better condition here
+                    if (child != null) {
+                        // When Old child is inside new child bounds
+                        // | | old child | |
+                        // | | new child | |
+                        if (child.getLeft() <= leftOffset
+                                && child.getRight() >= leftOffset + viewWidth) {
+                            Log.d("setPositionBasedOnLeftOffset",
+                                    "When Old child is inside new child bounds, "
+                                            + child.getLeft());
+                            overlapView = null;
+                            overlapValue = 0;
+                            break;
                         }
-                        Log.d("setPositionBasedOnLeftOffset",
-                                "When Old child is between two possible new child's bounds (RIGHT CHILD), "
-                                        + child.getLeft() + ", "
-                                        + child.getRight());
-                        break;
-                    } else {
-                        Log.d("setPositionBasedOnLeftOffset",
-                                "ELSE!!!!!, left=" + child.getLeft()
-                                        + ", right=" + child.getRight());
+                        // When Old child is between two possible new child's
+                        // bounds
+                        // (LEFT CHILD)
+                        // | | | old child | |
+                        // | new child | new child | |
+                        else if (child.getLeft() <= leftOffset
+                                && child.getRight() > leftOffset) {
+                            overlapView = child;
+                            overlapValue = child.getWidth()
+                                    - (leftOffset - child.getLeft());
+                            Log.d("setPositionBasedOnLeftOffset",
+                                    "When Old child is between two possible new child's bounds (LEFT CHILD), "
+                                            + child.getLeft() + ", "
+                                            + child.getRight());
+                        }
+                        // When new child is inside old child
+                        else if (child.getLeft() > leftOffset
+                                && child.getRight() < leftOffset + viewWidth) {
+                            Log.d("setPositionBasedOnLeftOffset",
+                                    "When new child is inside old child "
+                                            + child.getLeft());
+                            overlapView = null;
+                            overlapValue = 0;
+                            break;
+                        }
+                        // When Old child is between two possible new child's
+                        // bounds
+                        // (RIGHT CHILD)
+                        // | | | old child | |
+                        // | new child | new child | |
+                        else if (child.getLeft() > leftOffset
+                                && child.getRight() >= leftOffset + viewWidth) {
+                            int newOverlapValue = leftOffset + viewWidth
+                                    - child.getLeft();
+                            if (newOverlapValue > overlapValue) {
+                                overlapView = child;
+                            } else {
+                                desiredIndex--;
+                            }
+                            Log.d("setPositionBasedOnLeftOffset",
+                                    "When Old child is between two possible new child's bounds (RIGHT CHILD), "
+                                            + child.getLeft() + ", "
+                                            + child.getRight());
+                            break;
+                        } else {
+                            Log.d("setPositionBasedOnLeftOffset",
+                                    "ELSE!!!!!, left=" + child.getLeft()
+                                            + ", right=" + child.getRight());
+                        }
                     }
                 }
+                if (overlapView != null) {
+                    child = overlapView;
+                }
+                Log.d("setPositionBasedOnLeftOffset", "child.getLeft()="
+                        + child.getLeft() + ", desiredIndex=" + desiredIndex);
+                shouldISendCallback = false;
+                setSelectionFromLeft(desiredIndex,
+                        child == null ? 0 : child.getLeft());
+                setSelectionInt(desiredIndex);
+                shouldISendCallback = true;
+            } else {
+                throw new RuntimeException(
+                        "Adapter is not implementing HorizontalListInterface!");
             }
-            if (overlapView != null) {
-                child = overlapView;
-            }
-            Log.d("setPositionBasedOnLeftOffset",
-                    "child.getLeft()=" + child.getLeft() + ", desiredIndex="
-                            + desiredIndex);
-            shouldISendCallback = false;
-            setSelectionFromLeft(desiredIndex,
-                    child == null ? 0 : child.getLeft());
-            setSelectionInt(desiredIndex);
-            shouldISendCallback = true;
-        } else {
-            throw new RuntimeException(
-                    "Adapter is not implementing HorizontalListInterface!");
         }
     }
 
@@ -306,78 +326,83 @@ public class HorizListView extends HListView {
             final int totalLeftOffset, final int leftOffset, final int viewWidth) {
         Log.d("setPositionBasedOnLeftOffsetFromAdapter", "totalLeftOffset="
                 + totalLeftOffset);
-        if (getAdapter() instanceof HorizontalListInterface) {
-            SparseIntArray elementWidths = ((HorizontalListInterface) getAdapter())
-                    .getElementWidths();
-            int desiredIndex = 0;
-            int widthSum = 0;
-            int overlapValue = 0;
-            int overlapWidthSum = 0;
-            for (int i = 0; i < elementWidths.size(); i++) {
-                // When Old child is inside new child bounds
-                // | | old child | |
-                // | | new child | |
-                if (widthSum <= leftOffset + totalLeftOffset
-                        && widthSum + elementWidths.get(i) >= totalLeftOffset
-                                + leftOffset + viewWidth) {
-                    overlapWidthSum = 0;
-                    overlapValue = 0;
-                    desiredIndex = i;
-                    break;
+        if (getAdapter() != null) {
+            if (getAdapter() instanceof HorizontalListInterface) {
+                if (getAdapter().getCount() == 0) {
+                    return;
                 }
-                // When Old child is between two possible new child's bounds
-                // (LEFT CHILD)
-                // | | | old child | |
-                // | new child | new child | |
-                else if (widthSum <= totalLeftOffset + leftOffset
-                        && widthSum + elementWidths.get(i) > totalLeftOffset
-                                + leftOffset) {
-                    overlapWidthSum = widthSum;
-                    overlapValue = elementWidths.get(i)
-                            - (totalLeftOffset + leftOffset - widthSum);
-                    desiredIndex = i;
-                    widthSum += elementWidths.get(i);
-                }
-                // When new child is inside old child
-                else if (widthSum > totalLeftOffset + leftOffset
-                        && widthSum + elementWidths.get(i) < totalLeftOffset
-                                + leftOffset + viewWidth) {
-                    overlapWidthSum = 0;
-                    overlapValue = 0;
-                    desiredIndex = i;
-                    break;
-                }
-                // When Old child is between two possible new child's bounds
-                // (RIGHT CHILD)
-                // | | | old child | |
-                // | new child | new child | |
-                else if (widthSum > totalLeftOffset + leftOffset
-                        && widthSum + elementWidths.get(i) >= totalLeftOffset
-                                + leftOffset + viewWidth) {
-                    int newOverlapValue = totalLeftOffset + leftOffset
-                            + viewWidth - widthSum;
-                    if (newOverlapValue > overlapValue) {
-                        overlapWidthSum = widthSum;
+                ArrayList<HorizTimeObject<EpgEvent>> elementWidths = ((HorizontalListInterface) getAdapter())
+                        .getElementWidths();
+                int desiredIndex = 0;
+                int widthSum = 0;
+                int overlapValue = 0;
+                int overlapWidthSum = 0;
+                for (int i = 0; i < elementWidths.size(); i++) {
+                    // When Old child is inside new child bounds
+                    // | | old child | |
+                    // | | new child | |
+                    if (widthSum <= leftOffset + totalLeftOffset
+                            && widthSum + elementWidths.get(i).getWidth() >= totalLeftOffset
+                                    + leftOffset + viewWidth) {
+                        overlapWidthSum = 0;
+                        overlapValue = 0;
                         desiredIndex = i;
-                    } else {
-                        desiredIndex = i - 1;
+                        break;
                     }
-                    break;
-                } else {
-                    desiredIndex = i;
-                    widthSum += elementWidths.get(i);
+                    // When Old child is between two possible new child's bounds
+                    // (LEFT CHILD)
+                    // | | | old child | |
+                    // | new child | new child | |
+                    else if (widthSum <= totalLeftOffset + leftOffset
+                            && widthSum + elementWidths.get(i).getWidth() > totalLeftOffset
+                                    + leftOffset) {
+                        overlapWidthSum = widthSum;
+                        overlapValue = elementWidths.get(i).getWidth()
+                                - (totalLeftOffset + leftOffset - widthSum);
+                        desiredIndex = i;
+                        widthSum += elementWidths.get(i).getWidth();
+                    }
+                    // When new child is inside old child
+                    else if (widthSum > totalLeftOffset + leftOffset
+                            && widthSum + elementWidths.get(i).getWidth() < totalLeftOffset
+                                    + leftOffset + viewWidth) {
+                        overlapWidthSum = 0;
+                        overlapValue = 0;
+                        desiredIndex = i;
+                        break;
+                    }
+                    // When Old child is between two possible new child's bounds
+                    // (RIGHT CHILD)
+                    // | | | old child | |
+                    // | new child | new child | |
+                    else if (widthSum > totalLeftOffset + leftOffset
+                            && widthSum + elementWidths.get(i).getWidth() >= totalLeftOffset
+                                    + leftOffset + viewWidth) {
+                        int newOverlapValue = totalLeftOffset + leftOffset
+                                + viewWidth - widthSum;
+                        if (newOverlapValue > overlapValue) {
+                            overlapWidthSum = widthSum;
+                            desiredIndex = i;
+                        } else {
+                            desiredIndex = i - 1;
+                        }
+                        break;
+                    } else {
+                        desiredIndex = i;
+                        widthSum += elementWidths.get(i).getWidth();
+                    }
                 }
+                if (overlapWidthSum != 0) {
+                    widthSum = overlapWidthSum;
+                }
+                shouldISendCallback = false;
+                setSelectionFromLeft(desiredIndex, widthSum - totalLeftOffset);
+                setSelectionInt(desiredIndex);
+                shouldISendCallback = true;
+            } else {
+                throw new RuntimeException(
+                        "Adapter is not implementing HorizontalListInterface!");
             }
-            if (overlapWidthSum != 0) {
-                widthSum = overlapWidthSum;
-            }
-            shouldISendCallback = false;
-            setSelectionFromLeft(desiredIndex, widthSum - totalLeftOffset);
-            setSelectionInt(desiredIndex);
-            shouldISendCallback = true;
-        } else {
-            throw new RuntimeException(
-                    "Adapter is not implementing HorizontalListInterface!");
         }
     }
 

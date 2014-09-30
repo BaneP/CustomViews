@@ -79,6 +79,10 @@ public class EpgListView extends ListView {
         if (getSelectedItemPosition() == INVALID_POSITION) {
             return super.onKeyDown(keyCode, event);
         }
+        int oneMinuteWidth = INVALID_POSITION;
+        if (getParent() instanceof EpgGrid) {
+            oneMinuteWidth = ((EpgGrid) getParent()).getOneMinutePixelWidth();
+        }
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_DOWN: {
                 if (getSelectedItemPosition() < getAdapter().getCount() - 1) {
@@ -100,8 +104,13 @@ public class EpgListView extends ListView {
                         HorizListView newFocusedView = (HorizListView) getChildAt(
                                 newPosition - getFirstVisiblePosition())
                                 .findViewById(R.id.epg_hlist);
-                        newFocusedView.setPositionBasedOnLeftOffset(
-                                mElementLeftOffset, viewInfo.getWidth());
+                        // This will be NULL if adapter is empty
+                        if (newFocusedView != null) {
+                            newFocusedView.setPositionBasedOnLeftOffset(
+                                    mElementLeftOffset, viewInfo.getWidth(),
+                                    viewInfo.getWidth() == oneMinuteWidth
+                                            * EpgGrid.NUMBER_OF_MINUTES_IN_DAY);
+                        }
                     }
                     return retVal;
                 }
@@ -127,8 +136,13 @@ public class EpgListView extends ListView {
                         HorizListView newFocusedView = (HorizListView) getChildAt(
                                 newPosition - getFirstVisiblePosition())
                                 .findViewById(R.id.epg_hlist);
-                        newFocusedView.setPositionBasedOnLeftOffset(
-                                mElementLeftOffset, viewInfo.getWidth());
+                        // This will be NULL if adapter is empty
+                        if (newFocusedView != null) {
+                            newFocusedView.setPositionBasedOnLeftOffset(
+                                    mElementLeftOffset, viewInfo.getWidth(),
+                                    viewInfo.getWidth() == oneMinuteWidth
+                                            * EpgGrid.NUMBER_OF_MINUTES_IN_DAY);
+                        }
                     }
                     return retVal;
                 }
