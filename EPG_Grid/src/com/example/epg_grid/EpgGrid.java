@@ -59,14 +59,8 @@ public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
         mEpgTimeLineList.setFocusable(false);
         mEpgTimeLineList.setManuallyScrollable(false);
         mEpgTimeLineList.setItemsCanFocus(false);
-        ArrayList<HorizTimeObject<EpgEvent>> timeList = new ArrayList<HorizTimeObject<EpgEvent>>(
-                24);
-        for (int i = 0; i < 24; i++) {
-            timeList.add(new HorizTimeObject<EpgEvent>(
-                    mOneMinutePixelWidth * 60, null));
-        }
-        mEpgTimeLineList
-                .setAdapter(new HorizTimeListAdapter(context, timeList));
+        mEpgTimeLineList.setAdapter(new HorizTimeListAdapter(context,
+                mOneMinutePixelWidth, 0, 24));
     }
 
     @Override
