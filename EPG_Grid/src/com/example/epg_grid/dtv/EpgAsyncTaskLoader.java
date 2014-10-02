@@ -16,6 +16,11 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+/**
+ * Class for async events loading and calculating time frame pixel size
+ * 
+ * @author Branimir Pavlovic
+ */
 public class EpgAsyncTaskLoader extends
         AsyncTask<Integer, Void, ArrayList<EpgEvent>> {
     private ArrayList<HorizTimeObject<EpgEvent>> mElementWidths;
@@ -61,10 +66,6 @@ public class EpgAsyncTaskLoader extends
         Calendar lCalendar = lCurrentTime.getCalendar();
         lCalendar.add(Calendar.DATE, day);
         TimeDate startTimeDate = new TimeDate(0, 0, 0,
-                lCalendar.get(Calendar.DAY_OF_MONTH),
-                lCalendar.get(Calendar.MONTH) + 1, lCalendar.get(Calendar.YEAR));
-        lCalendar.add(Calendar.DATE, 1);
-        TimeDate endTimeDate = new TimeDate(0, 0, 0,
                 lCalendar.get(Calendar.DAY_OF_MONTH),
                 lCalendar.get(Calendar.MONTH) + 1, lCalendar.get(Calendar.YEAR));
         /**
@@ -143,9 +144,9 @@ public class EpgAsyncTaskLoader extends
                     break;
                 }
             }
-            //If day is not fully populated with events
+            // If day is not fully populated with events
             if (currentDayWidth < dayMaxWidth) {
-                int dummyEventWidth = dayMaxWidth-currentDayWidth;
+                int dummyEventWidth = dayMaxWidth - currentDayWidth;
                 mElementWidths.add(new HorizTimeObject<EpgEvent>(
                         dummyEventWidth, null));
             }
@@ -155,10 +156,6 @@ public class EpgAsyncTaskLoader extends
 
     /**
      * Calculate width of event in pixels
-     * 
-     * @param event
-     * @param oneMinutePixelWidth
-     * @return
      */
     private int calculateEventWidth(EpgEvent event, int oneMinutePixelWidth) {
         TimeDate startTime = event.getStartTime();
@@ -168,11 +165,6 @@ public class EpgAsyncTaskLoader extends
 
     /**
      * Calculate width of time frame in pixels
-     * 
-     * @param startTime
-     * @param endTime
-     * @param oneMinutePixelWidth
-     * @return
      */
     private int calculateTimeWidth(TimeDate startTime, TimeDate endTime,
             int oneMinutePixelWidth) {
@@ -193,6 +185,9 @@ public class EpgAsyncTaskLoader extends
                 mLeftOffset, mFocusedViewWidth);
     }
 
+    /**
+     * Class for refreshing new adapter views
+     */
     private class ViewObserver implements
             ViewTreeObserver.OnGlobalLayoutListener {
         WeakReference<HorizListView> mViewToObserve;
@@ -203,7 +198,6 @@ public class EpgAsyncTaskLoader extends
 
         @Override
         public void onGlobalLayout() {
-            Log.d("ON GLOBAL LAYOUT", "ENTERED");
             ViewTreeObserver observer = mViewToObserve.get()
                     .getViewTreeObserver();
             observer.removeOnGlobalLayoutListener(this);

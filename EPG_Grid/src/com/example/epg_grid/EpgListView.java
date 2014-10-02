@@ -10,6 +10,12 @@ import android.widget.ListView;
 
 import com.example.epg_grid.HorizListView.FocusedViewInfo;
 
+/**
+ * Vertical list that contains horizontal list items that presents one channel
+ * and its EPG events.
+ * 
+ * @author Branimir Pavlovic
+ */
 public class EpgListView extends ListView {
     private HorizListView mFocusedView;
     private int mTotalLeftOffset = 0;
@@ -30,6 +36,10 @@ public class EpgListView extends ListView {
         init(context);
     }
 
+    /**
+     * This initialization is very important, because horizontal list items will
+     * take focus from this list view.
+     */
     private void init(Context context) {
         setItemsCanFocus(true);
         setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
@@ -87,6 +97,7 @@ public class EpgListView extends ListView {
                     int newPosition = getSelectedItemPosition() + 1;
                     mFocusedView = (HorizListView) getSelectedView()
                             .findViewById(R.id.epg_hlist);
+                    // Get selected view informations
                     FocusedViewInfo viewInfo = mFocusedView
                             .getViewInfoForElementAt(mFocusedView
                                     .getSelectedItemPosition());
@@ -114,10 +125,11 @@ public class EpgListView extends ListView {
                                 .findViewById(R.id.epg_hlist);
                         // This will be NULL if adapter is empty
                         if (newFocusedView != null) {
+                            boolean isEmpty = viewInfo.getWidth() == oneMinuteWidth
+                                    * EpgGrid.NUMBER_OF_MINUTES_IN_DAY;
                             newFocusedView.setPositionBasedOnLeftOffset(
                                     mElementLeftOffset, viewInfo.getWidth(),
-                                    viewInfo.getWidth() == oneMinuteWidth
-                                            * EpgGrid.NUMBER_OF_MINUTES_IN_DAY);
+                                    isEmpty);
                         }
                     }
                     // For elements not yet visible
@@ -134,6 +146,7 @@ public class EpgListView extends ListView {
                     int newPosition = getSelectedItemPosition() - 1;
                     mFocusedView = (HorizListView) getSelectedView()
                             .findViewById(R.id.epg_hlist);
+                    // Get selected view informations
                     FocusedViewInfo viewInfo = mFocusedView
                             .getViewInfoForElementAt(mFocusedView
                                     .getSelectedItemPosition());

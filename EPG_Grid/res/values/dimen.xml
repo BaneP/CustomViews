@@ -2,5 +2,6 @@
 <resources>
 
     <dimen name="list_item_height">70dp</dimen>
+    <dimen name="time_line_height">50dp</dimen>
 
 </resources>

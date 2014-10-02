@@ -15,12 +15,15 @@ import it.sephiroth.android.library.widget.AbsHListView.LayoutParams;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+/**
+ * Class for presenting EPG events to user for one channel
+ * 
+ * @author Branimir Pavlovic
+ */
 public class HorizListAdapter extends BaseAdapter implements
         HorizontalListInterface {
     private ArrayList<HorizTimeObject<EpgEvent>> mElementWidths;
     private Context ctx;
-    protected static final SimpleDateFormat sFormat = new SimpleDateFormat(
-            "HH:mm:ss");
 
     public HorizListAdapter(Context ctx,
             ArrayList<HorizTimeObject<EpgEvent>> elementWidths) {

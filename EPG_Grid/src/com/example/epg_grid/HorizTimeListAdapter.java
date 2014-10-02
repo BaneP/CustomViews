@@ -2,6 +2,7 @@ package com.example.epg_grid;
 
 import android.content.Context;
 import android.util.SparseIntArray;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,14 +17,23 @@ import it.sephiroth.android.library.widget.AbsHListView.LayoutParams;
 import java.util.ArrayList;
 import java.util.Random;
 
+/**
+ * Adapter that populates time line with desired hours.
+ * 
+ * @author Branimir Pavlovic
+ */
 public class HorizTimeListAdapter extends BaseAdapter implements
         HorizontalListInterface {
     private ArrayList<HorizTimeObject<EpgEvent>> mElementWidths;
     private ArrayList<HorizTimeObject<Integer>> mElementValues;
     private LayoutInflater mInflater;
+    private int mTimeLineTextSize, mTimeLineTextSizeHalfHour;
 
     public HorizTimeListAdapter(Context ctx, int oneMinutePixelWidth,
-            int startHour, int endHour) {
+            int startHour, int endHour, int timeLineTextSize,
+            int timeLineTextSizeHalfHour) {
+        this.mTimeLineTextSize = timeLineTextSize;
+        this.mTimeLineTextSizeHalfHour = timeLineTextSizeHalfHour;
         mInflater = LayoutInflater.from(ctx);
         mElementValues = new ArrayList<HorizTimeObject<Integer>>();
         mElementWidths = new ArrayList<HorizTimeObject<EpgEvent>>();
@@ -67,6 +77,17 @@ public class HorizTimeListAdapter extends BaseAdapter implements
     }
 
     private void setView(ViewHolder holder, int position) {
+        // Set text sizes if needed
+        if (holder.left.getTextSize() != mTimeLineTextSize) {
+            holder.left.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                    mTimeLineTextSize);
+            holder.right.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                    mTimeLineTextSize);
+        }
+        if (holder.central.getTextSize() != mTimeLineTextSizeHalfHour) {
+            holder.central.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                    mTimeLineTextSizeHalfHour);
+        }
         // FIRST
         if (position == 0) {
             holder.left.setText(String.format("%02d",

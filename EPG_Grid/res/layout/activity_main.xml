@@ -1,21 +1,21 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:custom="http://schemas.android.com/apk/res-auto/com.example.epg_grid"
+    xmlns:custom="http://schemas.android.com/apk/res/com.example.epg_grid"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="${relativePackage}.${activityClass}" >
 
-    <!-- <com.example.epg_grid.EpgGridView -->
-    <!-- android:id="@+id/epgGridView1" -->
-    <!-- android:layout_width="match_parent" -->
-    <!-- android:layout_height="match_parent" > -->
-    <!-- </com.example.epg_grid.EpgGridView> -->
-
     <com.example.epg_grid.EpgGrid
-        android:id="@+id/listView1"
+        android:id="@+id/epgGrid"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        custom:minutePixelsWidth="7dp" >
+        custom:gridChannelItemHeight="@dimen/list_item_height"
+        custom:gridSelector="@drawable/list_item_background"
+        custom:minutePixelsWidth="7dp"
+        custom:timeLineBackground="@color/background"
+        custom:timeLineHeight="@dimen/time_line_height"
+        custom:timeLineTextSize="16sp"
+        custom:timeLineTextSizeHalfHour="14sp" >
     </com.example.epg_grid.EpgGrid>
 
 </RelativeLayout>

@@ -3,6 +3,12 @@
 
     <declare-styleable name="EpgGrid">
         <attr name="minutePixelsWidth" format="dimension" />
+        <attr name="timeLineBackground" format="reference|color" />
+        <attr name="timeLineTextSize" format="dimension" />
+        <attr name="timeLineTextSizeHalfHour" format="dimension" />
+        <attr name="timeLineHeight" format="dimension" />
+        <attr name="gridChannelItemHeight" format="dimension" />
+        <attr name="gridSelector" format="reference" />
     </declare-styleable>
 
 </resources>

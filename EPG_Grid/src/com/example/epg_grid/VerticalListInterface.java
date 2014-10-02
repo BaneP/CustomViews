@@ -15,4 +15,8 @@ public interface VerticalListInterface {
             OnScrollHappenedListener mOnScrollHappenedListener);
 
     public OnScrollHappenedListener getOnScrollHappenedListener();
+
+    public void setListSelector(int selector);
+
+    public void setItemsHeight(int height);
 }

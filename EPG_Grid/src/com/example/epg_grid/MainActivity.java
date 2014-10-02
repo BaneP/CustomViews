@@ -10,17 +10,14 @@ import com.example.epg_grid.dtv.DvbManager;
 import com.iwedia.dtv.types.InternalException;
 
 public class MainActivity extends Activity {
-    private EpgGrid list;
+    private EpgGrid mEpgGrid;
     private DvbManager mDvbManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // mEpgGrid = (EpgGridView) findViewById(R.id.epgGridView1);
-        // mEpgGrid.setAdapter(new EpgAdapter(this));
-        // list = (EpgGrid) findViewById(R.id.listView1);
-        // list.setAdapter(new ListAdapter(this));
+        mEpgGrid = (EpgGrid) findViewById(R.id.epgGrid);
         mDvbManager = DvbManager.getInstance();
         try {
             mDvbManager.changeChannelByNumber(1);

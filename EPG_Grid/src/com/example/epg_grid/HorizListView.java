@@ -1,8 +1,6 @@
 package com.example.epg_grid;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -77,10 +75,33 @@ public class HorizListView extends HListView {
         setOnScrollListener(mOnScrollListener);
     }
 
+    // private int mSelector;
+    //
+    // protected void onFocusChanged(boolean gainFocus, int direction,
+    // Rect previouslyFocusedRect) {
+    // Log.i("onFocusChanged", "onFocusChanged");
+    // super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+    // if (mSelector != 0) {
+    // if (gainFocus) {
+    // super.setSelector(mSelector);
+    // } else {
+    // super.setSelector(android.R.color.transparent);
+    // }
+    // }
+    // invalidateViews();
+    // }
+    //
+    // @Override
+    // public void setSelector(int sel) {
+    // mSelector = sel;
+    // super.setSelector(sel);
+    // }
+    /**
+     * Listener for horizontal list view scrolling
+     */
     private OnScrollListener mOnScrollListener = new OnScrollListener() {
         @Override
         public void onScrollStateChanged(AbsHListView view, int scrollState) {
-            Log.d("onScrollStateChanged", "SCROLL STATE=" + scrollState);
             switch (scrollState) {
                 case SCROLL_STATE_IDLE: {
                     isInTouchScroll = false;
@@ -102,7 +123,6 @@ public class HorizListView extends HListView {
         @Override
         public void onScroll(AbsHListView view, int firstVisibleItem,
                 int visibleItemCount, int totalItemCount) {
-            Log.d("onScroll", "firstVisibleItem=" + firstVisibleItem);
             if (getAdapter() != null) {
                 if (getAdapter() instanceof HorizontalListInterface) {
                     View c = getChildAt(0);
@@ -118,12 +138,6 @@ public class HorizListView extends HListView {
                         // invisible
                         // part
                         leftOffset = leftOffset - c.getLeft();
-                        Log.d("onScroll", "shouldIScroll="
-                                + shouldISendCallback
-                                + ", mOldOffset != leftOffset: "
-                                + (mOldOffset != leftOffset) + ", hasFocus()="
-                                + hasFocus() + ", isInTouchScroll="
-                                + isInTouchScroll);
                         // Send scroll event trough listener
                         if (mScrollHappened != null && shouldISendCallback
                                 && mOldOffset != leftOffset
@@ -143,7 +157,6 @@ public class HorizListView extends HListView {
     };
 
     @Override
-    @SuppressLint("Override")
     public boolean onTouchEvent(MotionEvent ev) {
         if (!canScrollManually) {
             return true;
@@ -185,11 +198,6 @@ public class HorizListView extends HListView {
             position = getFirstVisiblePosition();
         }
         int desiredPosition = position - getFirstVisiblePosition();
-        Log.d("getViewInfoForElementAt", "getLastVisiblePosition()="
-                + getLastVisiblePosition() + ", getFirstVisiblePosition()="
-                + getFirstVisiblePosition());
-        Log.d("getViewInfoForElementAt", "position=" + position
-                + ", desiredPosition=" + desiredPosition);
         View c = getChildAt(desiredPosition);
         return new FocusedViewInfo(c);
     }
@@ -215,11 +223,6 @@ public class HorizListView extends HListView {
                 View child = null;
                 int overlapValue = 0;
                 View overlapView = null;
-                Log.d("setPositionBasedOnLeftOffset",
-                        "getFirstVisiblePosition()="
-                                + getFirstVisiblePosition()
-                                + ", getLastVisiblePosition()="
-                                + getLastVisiblePosition());
                 for (desiredIndex = getFirstVisiblePosition(); desiredIndex <= getLastVisiblePosition(); desiredIndex++) {
                     Log.d("setPositionBasedOnLeftOffset", "get child at "
                             + (desiredIndex - getFirstVisiblePosition()));
@@ -234,7 +237,6 @@ public class HorizListView extends HListView {
                         }
                     }
                     Log.d("setPositionBasedOnLeftOffset", "child " + child);
-                    // TODO We need better condition here
                     if (child != null) {
                         // When Old child is inside new child bounds
                         // | | old child | |
@@ -413,11 +415,17 @@ public class HorizListView extends HListView {
         }
     }
 
-    public void scrollListByPixels(int y) {
+    /**
+     * This method is used to scroll this list by x amount of pixels
+     */
+    public void scrollListByPixels(int x) {
         shouldISendCallback = false;
-        super.smoothScrollBy(y, 0);
+        super.smoothScrollBy(x, 0);
     }
 
+    /**
+     * Class that contain necessary informations about currently selected view.
+     */
     class FocusedViewInfo {
         private int mLeft = 0;
         private int mWidth = 0;

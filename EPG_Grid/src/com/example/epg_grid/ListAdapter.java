@@ -21,31 +21,33 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
     private int mTotalLeftOffset = 0, mLeftOffset = 0, mFocusedViewWidth = 0;
     private int oneMinutePixelWidth;
     private int mCount = 0;
+    private int mListSelector;
     private ArrayList<String> mChannels;
+    private int mItemHeight;
 
-    public ListAdapter(Context ctx, int oneMinutePixelWidth) {
+    public ListAdapter(Context ctx, int oneMinutePixelWidth, int listSelector,
+            int itemHeight) {
         this.inflater = LayoutInflater.from(ctx);
         this.ctx = ctx;
         this.oneMinutePixelWidth = oneMinutePixelWidth;
+        this.mListSelector = listSelector;
+        this.mItemHeight = itemHeight;
         mCount = DvbManager.getInstance().getChannelListSize();
         mChannels = DvbManager.getInstance().getChannelNames();
     }
 
     @Override
     public int getCount() {
-        // TODO Auto-generated method stub
         return mCount;
     }
 
     @Override
     public Object getItem(int position) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public long getItemId(int position) {
-        // TODO Auto-generated method stub
         return 0;
     }
 
@@ -63,23 +65,33 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.epg_list_item, null);
             holder = new ViewHolder(convertView);
+            if (mListSelector != EpgGrid.INVALID_VALUE) {
+                holder.hList.setSelector(mListSelector);
+            }
             holder.hList.setOnScrollHappenedListener(mOnScrollHappenedListener);
             convertView.setTag(holder);
             convertView.setLayoutParams(new AbsListView.LayoutParams(
-                    AbsListView.LayoutParams.MATCH_PARENT, ctx.getResources()
-                            .getDimensionPixelSize(R.dimen.list_item_height)));
+                    AbsListView.LayoutParams.MATCH_PARENT, mItemHeight));
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
+        setView(holder, position);
+        return convertView;
+    }
+
+    /**
+     * Bind data to list views
+     */
+    private void setView(ViewHolder holder, int position) {
         holder.number.setText(mChannels.get(position));
+        holder.hList.setAdapter(null);
         EpgAsyncTaskLoader loader = new EpgAsyncTaskLoader(holder.hList, ctx,
                 mTotalLeftOffset, mLeftOffset, mFocusedViewWidth);
         loader.execute(position, oneMinutePixelWidth, 0);// TODO third param is
                                                          // day
-        return convertView;
     }
 
-    private class ViewHolder {
+    private static class ViewHolder {
         TextView number;
         HorizListView hList;
 
@@ -99,5 +111,17 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
     public void setOnScrollHappenedListener(
             OnScrollHappenedListener mOnScrollHappenedListener) {
         this.mOnScrollHappenedListener = mOnScrollHappenedListener;
+    }
+
+    @Override
+    public void setListSelector(int selector) {
+        mListSelector = selector;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void setItemsHeight(int height) {
+        mItemHeight = height;
+        notifyDataSetChanged();
     }
 }
