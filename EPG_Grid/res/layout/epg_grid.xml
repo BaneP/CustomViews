@@ -10,10 +10,10 @@
         android:layout_height="@dimen/list_item_height"
         layout="@layout/epg_list_item" />
 
-    <com.example.epg_grid.EpgListView
+    <com.iwedia.epg_grid.EpgListView
         android:id="@+id/listViewEpg"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
-    </com.example.epg_grid.EpgListView>
+    </com.iwedia.epg_grid.EpgListView>
 
 </merge>
