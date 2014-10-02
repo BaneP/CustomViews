@@ -12,6 +12,9 @@ import com.example.epg_grid.HorizListView.OnScrollHappenedListener;
 import com.example.epg_grid.dtv.DvbManager;
 import com.example.epg_grid.dtv.EpgAsyncTaskLoader;
 
+import it.sephiroth.android.library.widget.AdapterView.OnItemClickListener;
+import it.sephiroth.android.library.widget.AdapterView.OnItemSelectedListener;
+
 import java.util.ArrayList;
 
 public class ListAdapter extends BaseAdapter implements VerticalListInterface {
@@ -24,14 +27,27 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
     private int mListSelector;
     private ArrayList<String> mChannels;
     private int mItemHeight;
+    /**
+     * Listeners for horizontal lists
+     */
+    private OnItemSelectedListener mOnItemSelectedListener;
+    private OnItemClickListener mOnItemClickListener;
 
     public ListAdapter(Context ctx, int oneMinutePixelWidth, int listSelector,
             int itemHeight) {
-        this.inflater = LayoutInflater.from(ctx);
-        this.ctx = ctx;
+        this(ctx, listSelector, itemHeight);
         this.oneMinutePixelWidth = oneMinutePixelWidth;
+    }
+
+    public ListAdapter(Context ctx, int listSelector, int itemHeight) {
+        this(ctx);
         this.mListSelector = listSelector;
         this.mItemHeight = itemHeight;
+    }
+    
+    public ListAdapter(Context ctx) {
+        this.inflater = LayoutInflater.from(ctx);
+        this.ctx = ctx;
         mCount = DvbManager.getInstance().getChannelListSize();
         mChannels = DvbManager.getInstance().getChannelNames();
     }
@@ -69,6 +85,8 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
                 holder.hList.setSelector(mListSelector);
             }
             holder.hList.setOnScrollHappenedListener(mOnScrollHappenedListener);
+            holder.hList.setOnItemSelectedListener(mOnItemSelectedListener);
+            holder.hList.setOnItemClickListener(mOnItemClickListener);
             convertView.setTag(holder);
             convertView.setLayoutParams(new AbsListView.LayoutParams(
                     AbsListView.LayoutParams.MATCH_PARENT, mItemHeight));
@@ -123,5 +141,18 @@ public class ListAdapter extends BaseAdapter implements VerticalListInterface {
     public void setItemsHeight(int height) {
         mItemHeight = height;
         notifyDataSetChanged();
+    }
+
+    @Override
+    public void setHorizListListeners(
+            OnItemSelectedListener onItemSelectedListener,
+            OnItemClickListener onItemClickListener) {
+        this.mOnItemClickListener = onItemClickListener;
+        this.mOnItemSelectedListener = onItemSelectedListener;
+    }
+
+    @Override
+    public void setOneMinutePixelWidth(int width) {
+        oneMinutePixelWidth = width;
     }
 }

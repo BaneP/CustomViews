@@ -4,19 +4,27 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 
 import com.example.epg_grid.HorizListView.OnScrollHappenedListener;
+
+import it.sephiroth.android.library.widget.AdapterView.OnItemClickListener;
+import it.sephiroth.android.library.widget.AdapterView.OnItemSelectedListener;
 
 /**
  * Custom EPG grid view that contains list views with horizontal list views.
  * 
  * @author Branimir Pavlovic
  */
-public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
+public class EpgGrid extends LinearLayout implements OnScrollHappenedListener,
+        OnItemSelectedListener,
+        android.widget.AdapterView.OnItemSelectedListener, OnItemClickListener {
     public static final int INVALID_VALUE = -1;
     public static final int NUMBER_OF_MINUTES_IN_DAY = 1440;
     private static final int ONE_MINUTE_PIXELS_WIDTH = 10;
@@ -33,6 +41,34 @@ public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
     private int mTimeLineTextSize, mTimeLineTextSizeHalfHour, mTimeLineHeight;
     private int mChannelItemHeight;
     private int mGridSelector;
+
+    /**
+     * On item selected listener for EPG grid view.
+     */
+    public interface OnItemSelectedListener {
+        public void onItemSelected(EpgListView verticalList,
+                View verticalListElement, HorizListView horizontalList,
+                View horizontalListElement, int verticalListChildIndex,
+                int horizontalListChildIndex);
+
+        public void onNothingSelected(EpgListView arg0);
+    }
+
+    /**
+     * On item click listener for EPG grid view.
+     */
+    public interface OnItemClickListener {
+        public void onItemClick(EpgListView verticalList,
+                View verticalListElement, HorizListView horizontalList,
+                View horizontalListElement, int verticalListChildIndex,
+                int horizontalListChildIndex);
+    }
+
+    /**
+     * Listeners
+     */
+    private OnItemSelectedListener mOnItemSelectedListener;
+    private OnItemClickListener mOnItemClickListener;
 
     public EpgGrid(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -81,11 +117,6 @@ public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
         // Initialize vertical list view
         mEpgVerticalList = (EpgListView) findViewById(R.id.listViewEpg);
         mEpgVerticalList.setSelector(android.R.color.transparent);
-        // Initialize adapter
-        ListAdapter adapter = new ListAdapter(context, mOneMinutePixelWidth,
-                mGridSelector, mChannelItemHeight);
-        adapter.setOnScrollHappenedListener(this);
-        mEpgVerticalList.setAdapter(adapter);
         // Initialize time line view
         View timeLineView = findViewById(R.id.epg_time_line);
         if (timeLineBackground != null) {
@@ -101,6 +132,8 @@ public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
         mEpgTimeLineList.setAdapter(new HorizTimeListAdapter(context,
                 mOneMinutePixelWidth, 0, 24, mTimeLineTextSize,
                 mTimeLineTextSizeHalfHour));
+        // Set listeners
+        mEpgVerticalList.setOnItemSelectedListener(this);
     }
 
     @Override
@@ -109,6 +142,76 @@ public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
             mEpgTimeLineList.scrollListByPixels(offset);
         }
         mEpgVerticalList.scrollTo(v, offset, totalOffset);
+    }
+
+    @Override
+    public void onItemClick(
+            it.sephiroth.android.library.widget.AdapterView<?> parent,
+            View view, int position, long id) {
+        if (mOnItemClickListener != null) {
+            mOnItemClickListener.onItemClick(mEpgVerticalList,
+                    mEpgVerticalList.getSelectedView(), (HorizListView) parent,
+                    view, mEpgVerticalList.getSelectedItemPosition(), position);
+        }
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
+            long arg3) {
+        if (mOnItemSelectedListener != null) {
+            HorizListView hlist = (HorizListView) arg1
+                    .findViewById(R.id.epg_hlist);
+            View horizontalListElement = null;
+            int horizontalListChildIndex = ListView.INVALID_POSITION;
+            if (hlist != null) {
+                horizontalListElement = hlist.getSelectedView();
+                horizontalListChildIndex = hlist.getSelectedItemPosition();
+            }
+            mOnItemSelectedListener.onItemSelected(mEpgVerticalList, arg1,
+                    hlist, horizontalListElement, arg2,
+                    horizontalListChildIndex);
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> arg0) {
+        if (mOnItemSelectedListener != null) {
+            mOnItemSelectedListener.onNothingSelected(mEpgVerticalList);
+        }
+    }
+
+    @Override
+    public void onItemSelected(
+            it.sephiroth.android.library.widget.AdapterView<?> parent,
+            View horizontalListElement, int horizontalListChildIndex, long id) {
+        if (mOnItemSelectedListener != null) {
+            HorizListView hlist = (HorizListView) parent;
+            View verticalListElement = mEpgVerticalList.getSelectedView();
+            mOnItemSelectedListener.onItemSelected(mEpgVerticalList,
+                    verticalListElement, hlist, horizontalListElement,
+                    mEpgVerticalList.getSelectedItemPosition(),
+                    horizontalListChildIndex);
+        }
+    }
+
+    @Override
+    public void onNothingSelected(
+            it.sephiroth.android.library.widget.AdapterView<?> parent) {
+    }
+
+    /**
+     * Sets custom adapter to grid list.
+     */
+    public void setAdapter(ListAdapter adapter) {
+        if (adapter == null) {
+            return;
+        }
+        adapter.setHorizListListeners(this, this);
+        adapter.setOnScrollHappenedListener(this);
+        adapter.setOneMinutePixelWidth(mOneMinutePixelWidth);
+        adapter.setListSelector(mGridSelector);
+        adapter.setItemsHeight(mChannelItemHeight);
+        mEpgVerticalList.setAdapter(adapter);
     }
 
     public void setGridSelector(int mGridSelector) {
@@ -155,14 +258,6 @@ public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
         return mOneMinutePixelWidth;
     }
 
-    public EpgListView getEpgVerticalList() {
-        return mEpgVerticalList;
-    }
-
-    public HorizListView getEpgTimeLineList() {
-        return mEpgTimeLineList;
-    }
-
     public int getTimeLineTextSize() {
         return mTimeLineTextSize;
     }
@@ -181,5 +276,22 @@ public class EpgGrid extends LinearLayout implements OnScrollHappenedListener {
 
     public int getGridSelector() {
         return mGridSelector;
+    }
+
+    public OnItemSelectedListener getOnItemSelectedListener() {
+        return mOnItemSelectedListener;
+    }
+
+    public void setOnItemSelectedListener(
+            OnItemSelectedListener mOnItemSelectedListener) {
+        this.mOnItemSelectedListener = mOnItemSelectedListener;
+    }
+
+    public OnItemClickListener getOnItemClickListener() {
+        return mOnItemClickListener;
+    }
+
+    public void setOnItemClickListener(OnItemClickListener mOnItemClickListener) {
+        this.mOnItemClickListener = mOnItemClickListener;
     }
 }

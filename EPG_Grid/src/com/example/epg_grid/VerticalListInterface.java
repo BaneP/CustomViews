@@ -2,6 +2,9 @@ package com.example.epg_grid;
 
 import com.example.epg_grid.HorizListView.OnScrollHappenedListener;
 
+import it.sephiroth.android.library.widget.AdapterView.OnItemClickListener;
+import it.sephiroth.android.library.widget.AdapterView.OnItemSelectedListener;
+
 /**
  * Interface that vertical list adapter should implement
  * 
@@ -19,4 +22,16 @@ public interface VerticalListInterface {
     public void setListSelector(int selector);
 
     public void setItemsHeight(int height);
+
+    /**
+     * This method must be called for listeners of horizontal list to work
+     * 
+     * @param onItemSelectedListener
+     * @param onItemClickListener
+     */
+    public void setHorizListListeners(
+            OnItemSelectedListener onItemSelectedListener,
+            OnItemClickListener onItemClickListener);
+
+    public void setOneMinutePixelWidth(int width);
 }

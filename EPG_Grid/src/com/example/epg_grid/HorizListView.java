@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ListAdapter;
 import android.widget.ProgressBar;
 
 import com.iwedia.dtv.epg.EpgEvent;
@@ -73,6 +74,15 @@ public class HorizListView extends HListView {
 
     public void registerTouchScrollListener() {
         setOnScrollListener(mOnScrollListener);
+    }
+
+    @Override
+    public void setAdapter(ListAdapter adapter) {
+        if (!(adapter instanceof HorizontalListInterface) && adapter != null) {
+            throw new IllegalArgumentException(
+                    "Adapter must implement HorizontalListInterface!");
+        }
+        super.setAdapter(adapter);
     }
 
     // private int mSelector;
