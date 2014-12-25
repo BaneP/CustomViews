@@ -4,11 +4,12 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.iwedia.epg_grid.HorizListView.FocusedViewInfo;
+
+import java.util.Calendar;
 
 /**
  * Vertical list that contains horizontal list items that presents one channel
@@ -42,7 +43,6 @@ public class EpgListView extends ListView {
      */
     private void init(Context context) {
         setItemsCanFocus(true);
-        setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
     }
 
     @Override
@@ -64,19 +64,28 @@ public class EpgListView extends ListView {
      * @param totalOffset
      *        Total left offset of scrolled list
      */
-    public void scrollTo(HorizListView v, int offset, int totalOffset) {
+    public void scrollTo(HorizListView v, int totalOffset) {
         mTotalLeftOffset = totalOffset;
         if (getChildCount() > 0) {
-            HorizListView hlist = (HorizListView) getChildAt(0).findViewById(
-                    R.id.epg_hlist);
-            FocusedViewInfo viewInfo = hlist.getViewInfoForElementAt(0);
-            ((VerticalListInterface) getAdapter()).setCurrentScrollPosition(
-                    mTotalLeftOffset, viewInfo.getLeft(), viewInfo.getWidth());
-            for (int i = 0; i < getChildCount(); i++) {
-                hlist = (HorizListView) getChildAt(i).findViewById(
-                        R.id.epg_hlist);
+            HorizListView hlist = null;
+            int i;
+            EpgViewHolder viewHolder = null;
+            for (i = getChildCount(); --i >= 0;) {
+                viewHolder = (EpgViewHolder) getChildAt(i).getTag();
+                hlist = viewHolder.getHList();
+                // Set current scroll position to adapter
+                // Take first element because all elements have same scroll
+                // value
+                if (i == 0) {
+                    final FocusedViewInfo viewInfo = hlist
+                            .getViewInfoForElementAt(0);
+                    ((VerticalListInterface) getAdapter())
+                            .setCurrentScrollPosition(mTotalLeftOffset,
+                                    viewInfo.getLeft(), viewInfo.getWidth());
+                }
+                // Scroll other list views to desired scroll value
                 if (hlist != v) {
-                    hlist.scrollListByPixels(offset);
+                    hlist.scrollListToPixel(totalOffset);
                 }
             }
         }
@@ -88,15 +97,21 @@ public class EpgListView extends ListView {
             return super.onKeyDown(keyCode, event);
         }
         int oneMinuteWidth = INVALID_POSITION;
+        int startHour = 0;
         if (getParent() instanceof EpgGrid) {
             oneMinuteWidth = ((EpgGrid) getParent()).getOneMinutePixelWidth();
+            startHour = ((EpgGrid) getParent()).getTimeTableStartTime().get(
+                    Calendar.HOUR_OF_DAY);
         }
+        final int dayMaxWidth = oneMinuteWidth
+                * ((24 - startHour) * EpgGrid.NUMBER_OF_MINUTES_IN_HOUR);
+        EpgViewHolder viewHolder = null;
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_DOWN: {
                 if (getSelectedItemPosition() < getAdapter().getCount() - 1) {
-                    int newPosition = getSelectedItemPosition() + 1;
-                    mFocusedView = (HorizListView) getSelectedView()
-                            .findViewById(R.id.epg_hlist);
+                    final int newPosition = getSelectedItemPosition() + 1;
+                    viewHolder = (EpgViewHolder) getSelectedView().getTag();
+                    mFocusedView = viewHolder.getHList();
                     // Get selected view informations
                     FocusedViewInfo viewInfo = mFocusedView
                             .getViewInfoForElementAt(mFocusedView
@@ -121,12 +136,11 @@ public class EpgListView extends ListView {
                             setSelectionFromTop(newPosition, getHeight()
                                     - nextView.getHeight());
                         }
-                        HorizListView newFocusedView = (HorizListView) nextView
-                                .findViewById(R.id.epg_hlist);
+                        viewHolder = (EpgViewHolder) nextView.getTag();
+                        HorizListView newFocusedView = viewHolder.getHList();
                         // This will be NULL if adapter is empty
                         if (newFocusedView != null) {
-                            boolean isEmpty = viewInfo.getWidth() == oneMinuteWidth
-                                    * EpgGrid.NUMBER_OF_MINUTES_IN_DAY;
+                            boolean isEmpty = viewInfo.getWidth() == dayMaxWidth;
                             newFocusedView.setPositionBasedOnLeftOffset(
                                     mElementLeftOffset, viewInfo.getWidth(),
                                     isEmpty);
@@ -144,8 +158,8 @@ public class EpgListView extends ListView {
             case KeyEvent.KEYCODE_DPAD_UP: {
                 if (getSelectedItemPosition() > 0) {
                     int newPosition = getSelectedItemPosition() - 1;
-                    mFocusedView = (HorizListView) getSelectedView()
-                            .findViewById(R.id.epg_hlist);
+                    viewHolder = (EpgViewHolder) getSelectedView().getTag();
+                    mFocusedView = viewHolder.getHList();
                     // Get selected view informations
                     FocusedViewInfo viewInfo = mFocusedView
                             .getViewInfoForElementAt(mFocusedView
@@ -169,13 +183,11 @@ public class EpgListView extends ListView {
                         else {
                             setSelectionFromTop(newPosition, 0);
                         }
-                        HorizListView newFocusedView = (HorizListView) getChildAt(
-                                newPosition - getFirstVisiblePosition())
-                                .findViewById(R.id.epg_hlist);
+                        viewHolder = (EpgViewHolder) nextView.getTag();
+                        HorizListView newFocusedView = viewHolder.getHList();
                         // This will be NULL if adapter is empty
                         if (newFocusedView != null) {
-                            boolean isEmpty = viewInfo.getWidth() == oneMinuteWidth
-                                    * EpgGrid.NUMBER_OF_MINUTES_IN_DAY;
+                            boolean isEmpty = viewInfo.getWidth() == dayMaxWidth;
                             newFocusedView.setPositionBasedOnLeftOffset(
                                     mElementLeftOffset, viewInfo.getWidth(),
                                     isEmpty);

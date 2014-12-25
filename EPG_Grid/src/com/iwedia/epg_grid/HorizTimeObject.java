@@ -9,6 +9,7 @@ package com.iwedia.epg_grid;
 public class HorizTimeObject<T> {
     private int mWidth;
     private boolean isRealEvent = true;
+    private int mViewType = 0;
     private T mObject;
 
     public HorizTimeObject(int width, boolean isRealEvent) {
@@ -28,11 +29,23 @@ public class HorizTimeObject<T> {
         return mWidth;
     }
 
+    public void setWidth(int width) {
+        mWidth=width;
+    }
+
     public T getObject() {
         return mObject;
     }
 
     public boolean isRealEvent() {
         return isRealEvent;
+    }
+
+    public int getViewType() {
+        return mViewType;
+    }
+
+    public void setViewType(int mViewType) {
+        this.mViewType = mViewType;
     }
 }

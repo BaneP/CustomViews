@@ -5,14 +5,14 @@ import com.iwedia.epg_grid.HorizListView.OnScrollHappenedListener;
 import it.sephiroth.android.library.widget.AdapterView.OnItemClickListener;
 import it.sephiroth.android.library.widget.AdapterView.OnItemSelectedListener;
 
+import java.util.Calendar;
+
 /**
  * Interface that vertical list adapter should implement
  * 
  * @author Branimir Pavlovic
  */
-public interface VerticalListInterface {
-    public void setCurrentScrollPosition(int totalLeftOffset, int leftOffset,
-            int focusedViewWidth);
+public interface VerticalListInterface extends EpgListInterface {
 
     public void setOnScrollHappenedListener(
             OnScrollHappenedListener mOnScrollHappenedListener);
@@ -34,4 +34,6 @@ public interface VerticalListInterface {
             OnItemClickListener onItemClickListener);
 
     public void setOneMinutePixelWidth(int width);
+
+    public void setStartDate(Calendar startDate);
 }

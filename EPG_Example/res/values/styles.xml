@@ -2,8 +2,8 @@
 
     <style name="Transparent" parent="android:Theme.Holo.NoActionBar.Fullscreen">
         <item name="android:windowIsTranslucent">false</item>
-        <item name="android:windowBackground">@color/background</item>
-        <item name="android:windowContentOverlay">@color/background</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@android:color/transparent</item>
         <item name="android:windowNoTitle">true</item>
     </style>
 

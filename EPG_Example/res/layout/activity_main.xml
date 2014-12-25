@@ -3,6 +3,7 @@
     xmlns:custom="http://schemas.android.com/apk/res/com.example.epg_try"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#88000000"
     tools:context="${relativePackage}.${activityClass}" >
 
     <com.iwedia.epg_grid.EpgGrid
@@ -10,12 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         custom:gridChannelItemHeight="@dimen/list_item_height"
+        custom:gridDividerHeight="5dp"
+        custom:gridDividerWidth="5dp"
         custom:gridSelector="@drawable/list_item_background"
         custom:minutePixelsWidth="7dp"
-        custom:timeLineBackground="@color/background"
         custom:timeLineHeight="@dimen/time_line_height"
         custom:timeLineTextSize="16sp"
         custom:timeLineTextSizeHalfHour="14sp" >
     </com.iwedia.epg_grid.EpgGrid>
-    
+
 </RelativeLayout>

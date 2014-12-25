@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/list_item_height"
+    android:gravity="center_vertical"
     android:weightSum="1" >
 
     <include
@@ -15,7 +16,9 @@
         android:id="@+id/epg_hlist"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="0.9" >
+        android:layout_marginLeft="5dp"
+        android:layout_weight="0.9"
+        android:cacheColorHint="#00000000" >
     </com.iwedia.epg_grid.HorizListView>
 
 </LinearLayout>

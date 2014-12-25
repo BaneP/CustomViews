@@ -13,7 +13,9 @@
     <com.iwedia.epg_grid.EpgListView
         android:id="@+id/listViewEpg"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent"
+        android:layout_marginTop="2dp"
+        android:cacheColorHint="#00000000" >
     </com.iwedia.epg_grid.EpgListView>
 
 </merge>

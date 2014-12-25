@@ -8,6 +8,7 @@
     <item android:drawable="@drawable/list_selector_background_disabled_light" android:state_enabled="false" android:state_focused="true"/>
     <item android:drawable="@drawable/list_selector_background_transition" android:state_focused="true" android:state_pressed="true"/>
     <item android:drawable="@drawable/list_selector_background_transition" android:state_focused="false" android:state_pressed="true"/>
-    <item android:drawable="@drawable/list_selector_background_focus" android:state_focused="true"/>
+    <!-- <item android:drawable="@drawable/list_selector_background_focus" android:state_focused="true"/> -->
+    <item android:drawable="@android:color/holo_blue_light" android:state_focused="true"/>
 
 </selector>

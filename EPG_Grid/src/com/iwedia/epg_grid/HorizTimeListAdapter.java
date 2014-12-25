@@ -5,29 +5,32 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.TextView;
-
 import it.sephiroth.android.library.widget.AbsHListView.LayoutParams;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  * Adapter that populates time line with desired hours.
  * 
  * @author Branimir Pavlovic
  */
-public class HorizTimeListAdapter extends BaseAdapter implements
+public class HorizTimeListAdapter extends EpgBaseAdapter implements
         HorizontalListInterface {
     private ArrayList<HorizTimeObject<Integer>> mElementValues;
     private LayoutInflater mInflater;
     private int mTimeLineTextSize, mTimeLineTextSizeHalfHour;
+    private boolean is24HourFormat = true;
 
     public HorizTimeListAdapter(Context ctx, int oneMinutePixelWidth,
             int startHour, int endHour, int timeLineTextSize,
-            int timeLineTextSizeHalfHour) {
+            int timeLineTextSizeHalfHour, boolean is24HourFormat) {
         this.mTimeLineTextSize = timeLineTextSize;
         this.mTimeLineTextSizeHalfHour = timeLineTextSizeHalfHour;
+        this.is24HourFormat = is24HourFormat;
         mInflater = LayoutInflater.from(ctx);
         mElementValues = new ArrayList<HorizTimeObject<Integer>>();
         for (int i = startHour; i < endHour; i++) {
@@ -79,26 +82,67 @@ public class HorizTimeListAdapter extends BaseAdapter implements
             holder.central.setTextSize(TypedValue.COMPLEX_UNIT_PX,
                     mTimeLineTextSizeHalfHour);
         }
-        // FIRST
-        if (position == 0) {
-            holder.left.setText(String.format("%02d",
-                    mElementValues.get(position).getObject())
-                    + ":00");
+        final int hour = mElementValues.get(position).getObject();
+        if (is24HourFormat) {
+            // FIRST
+            if (position == 0) {
+                holder.left.setText(String.format("%02d", hour) + ":00");
+            } else {
+                holder.left.setText(":00");
+            }
+            // LAST
+            if (position == mElementValues.size() - 1) {
+                holder.right.setText(String.format("%02d", hour + 1) + ":00");
+            } else {
+                holder.right.setText(String.format("%02d", hour + 1));
+            }
+            // MIDDLE
+            holder.central.setText(String.format("%02d", hour) + ":30");
         } else {
-            holder.left.setText(":00");
+            final GregorianCalendar time = (GregorianCalendar) GregorianCalendar
+                    .getInstance();
+            time.set(Calendar.HOUR_OF_DAY, hour);
+            time.set(Calendar.MINUTE, 0);
+            // FIRST
+            if (position == 0) {
+                holder.left.setText(getDateFromFormat(time, "ha"));
+            } else {
+                holder.left.setText(getDateFromFormat(time, "a"));
+            }
+            // MIDDLE
+            time.set(Calendar.MINUTE, 30);
+            holder.central.setText(getDateFromFormat(time, "h:mma"));
+            // LAST
+            time.set(Calendar.HOUR_OF_DAY, hour + 1);
+            if (position == mElementValues.size() - 1) {
+                holder.right.setText(getDateFromFormat(time, "ha"));
+            } else {
+                holder.right.setText(getDateFromFormat(time, "h"));
+            }
         }
-        // LAST
-        if (position == mElementValues.size() - 1) {
-            holder.right.setText(String.format("%02d",
-                    mElementValues.get(position).getObject() + 1)
-                    + ":00");
-        } else {
-            holder.right.setText(String.format("%02d",
-                    mElementValues.get(position).getObject() + 1));
+    }
+
+    /**
+     * Get a String of the date or time base on format and date passed in. (ex.
+     * h:mma will return something like 10:55PM)
+     * 
+     * @param cal
+     *        The calendar of the time.
+     * @param format
+     *        The time format requested based on passed in time.
+     * @return The formatted String.
+     */
+    private static String getDateFromFormat(GregorianCalendar cal, String format) {
+        String dateFormatted = "";
+        try {
+            final SimpleDateFormat fmt = new SimpleDateFormat(format);
+            fmt.setCalendar(cal);
+            fmt.setTimeZone(cal.getTimeZone());
+            dateFormatted = fmt.format(cal.getTime());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        holder.central.setText(String.format("%02d",
-                mElementValues.get(position).getObject())
-                + ":30");
+        return dateFormatted;
     }
 
     private static class ViewHolder {

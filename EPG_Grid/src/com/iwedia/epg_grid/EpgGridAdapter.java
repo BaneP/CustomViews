@@ -1,12 +1,16 @@
 package com.iwedia.epg_grid;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 
 import com.iwedia.epg_grid.HorizListView.OnScrollHappenedListener;
 
@@ -15,20 +19,23 @@ import it.sephiroth.android.library.widget.AdapterView.OnItemSelectedListener;
 
 import java.lang.ref.WeakReference;
 
-public abstract class EpgGridAdapter extends BaseAdapter implements
+public abstract class EpgGridAdapter extends EpgBaseAdapter implements
         VerticalListInterface {
     private LayoutInflater mInflater;
     protected WeakReference<Context> mContextReference;
     private OnScrollHappenedListener mOnScrollHappenedListener;
-    protected int mTotalLeftOffset = 0, mLeftOffset = 0, mFocusedViewWidth = 0;
+
     private int oneMinutePixelWidth;
     private int mListSelector;
     private int mItemHeight;
+    private int mDividerWidth = 0;
+    private LinearLayout.LayoutParams mHListParams;
     /**
      * Listeners for horizontal lists
      */
     private OnItemSelectedListener mOnItemSelectedListener;
     private OnItemClickListener mOnItemClickListener;
+    private View.OnKeyListener mOnKeyListener;
 
     public EpgGridAdapter(Context ctx, int oneMinutePixelWidth,
             int listSelector, int itemHeight) {
@@ -45,14 +52,8 @@ public abstract class EpgGridAdapter extends BaseAdapter implements
     public EpgGridAdapter(Context ctx) {
         this.mContextReference = new WeakReference<Context>(ctx);
         mInflater = LayoutInflater.from(ctx);
-    }
-
-    @Override
-    public void setCurrentScrollPosition(int totalLeftOffset, int leftOffset,
-            int focusedViewWidth) {
-        this.mTotalLeftOffset = totalLeftOffset;
-        this.mLeftOffset = leftOffset;
-        this.mFocusedViewWidth = focusedViewWidth;
+        mHListParams = new LayoutParams(0, LayoutParams.MATCH_PARENT, 0.9f);
+        mHListParams.setMargins(mDividerWidth, 0, 0, 0);
     }
 
     @Override
@@ -61,7 +62,6 @@ public abstract class EpgGridAdapter extends BaseAdapter implements
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.epg_list_item, null);
             holder = getViewHolder(convertView);
-            // holder = new EpgViewHolder(convertView);
             if (mListSelector != EpgGrid.INVALID_VALUE) {
                 holder.getHList().setSelector(mListSelector);
             }
@@ -69,13 +69,17 @@ public abstract class EpgGridAdapter extends BaseAdapter implements
                     mOnScrollHappenedListener);
             holder.getHList()
                     .setOnItemSelectedListener(mOnItemSelectedListener);
+            holder.getHList().setDivider(new ColorDrawable(Color.TRANSPARENT));
+            holder.getHList().setDividerWidth(mDividerWidth);
             holder.getHList().setOnItemClickListener(mOnItemClickListener);
+            holder.getHList().setOnKeyListener(mOnKeyListener);
             convertView.setTag(holder);
             convertView.setLayoutParams(new AbsListView.LayoutParams(
                     AbsListView.LayoutParams.MATCH_PARENT, mItemHeight));
         } else {
             holder = (EpgViewHolder) convertView.getTag();
         }
+        holder.setPosition(position);
         setView(holder, position);
         return convertView;
     }
@@ -98,43 +102,6 @@ public abstract class EpgGridAdapter extends BaseAdapter implements
      * @return Created view holder instance
      */
     protected abstract EpgViewHolder getViewHolder(View convertView);
-
-    /**
-     * This method is mandatory to call after data set is ready to present in
-     * horizontal list view.
-     * 
-     * @param horizList
-     * @param adapter
-     */
-    public void refreshHorizontalListWhenDataIsReady(HorizListView horizList,
-            BaseAdapter adapter) {
-        horizList.getViewTreeObserver().addOnGlobalLayoutListener(
-                new ViewObserver(horizList));
-        horizList.setAdapter(adapter);
-        horizList.setPositionBasedOnLeftOffsetFromAdapter(mTotalLeftOffset,
-                mLeftOffset, mFocusedViewWidth);
-    }
-
-    /**
-     * Class for refreshing new adapter views
-     */
-    protected class ViewObserver implements
-            ViewTreeObserver.OnGlobalLayoutListener {
-        WeakReference<HorizListView> mViewToObserve;
-
-        public ViewObserver(HorizListView viewToObserve) {
-            mViewToObserve = new WeakReference<HorizListView>(viewToObserve);
-        }
-
-        @Override
-        public void onGlobalLayout() {
-            ViewTreeObserver observer = mViewToObserve.get()
-                    .getViewTreeObserver();
-            observer.removeOnGlobalLayoutListener(this);
-            mViewToObserve.get().setPositionBasedOnLeftOffsetFromAdapter(
-                    mTotalLeftOffset, mLeftOffset, mFocusedViewWidth);
-        }
-    }
 
     @Override
     public OnScrollHappenedListener getOnScrollHappenedListener() {
@@ -182,5 +149,24 @@ public abstract class EpgGridAdapter extends BaseAdapter implements
 
     public int getOneMinutePixelWidth() {
         return oneMinutePixelWidth;
+    }
+
+    public int getDividerWidth() {
+        return mDividerWidth;
+    }
+
+    public void setDividerWidth(int mDividerWidth) {
+        this.mDividerWidth = mDividerWidth;
+        mHListParams = new LayoutParams(0, LayoutParams.MATCH_PARENT, 0.9f);
+        mHListParams.setMargins(mDividerWidth, 0, 0, 0);
+        notifyDataSetChanged();
+    }
+
+    public View.OnKeyListener getOnKeyListener() {
+        return mOnKeyListener;
+    }
+
+    public void setOnKeyListener(View.OnKeyListener mOnKeyListener) {
+        this.mOnKeyListener = mOnKeyListener;
     }
 }

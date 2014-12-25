@@ -7,8 +7,14 @@
         <attr name="timeLineTextSize" format="dimension" />
         <attr name="timeLineTextSizeHalfHour" format="dimension" />
         <attr name="timeLineHeight" format="dimension" />
+        <attr name="timeLineHourFormat">
+            <enum name="hourFormat24" value="0" />
+            <enum name="hourFormat12" value="1" />
+        </attr>
         <attr name="gridChannelItemHeight" format="dimension" />
         <attr name="gridSelector" format="reference" />
+        <attr name="gridDividerWidth" format="dimension" />
+        <attr name="gridDividerHeight" format="dimension" />
     </declare-styleable>
 
 </resources>

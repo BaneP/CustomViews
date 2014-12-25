@@ -53,6 +53,11 @@ public class MainActivity extends Activity implements
     public void onItemClick(EpgListView verticalList, View verticalListElement,
             HorizListView horizontalList, View horizontalListElement,
             int verticalListChildIndex, int horizontalListChildIndex) {
+        try {
+            mDvbManager.changeChannelByNumber(verticalListChildIndex);
+        } catch (InternalException e) {
+            e.printStackTrace();
+        }
         Log.d("ITEM CLICKED", "verticalListChildIndex="
                 + verticalListChildIndex + ", horizontalListChildIndex="
                 + horizontalListChildIndex);

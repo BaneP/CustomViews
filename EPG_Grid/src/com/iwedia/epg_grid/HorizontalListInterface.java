@@ -7,6 +7,6 @@ package com.iwedia.epg_grid;
  * 
  * @author Branimir Pavlovic
  */
-public interface HorizontalListInterface {
+public interface HorizontalListInterface extends EpgListInterface{
     public int getElementWidth(int position);
 }
